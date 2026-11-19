@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrontEnd.Views.vRecuperarContrasena"
+             Title=""
+             Style="{StaticResource PaginaAuth}">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,8,24,32"
+                                 Spacing="0"
+                                 MaximumWidthRequest="440">
+
+                <Label Text="Recupera tu contraseña"
+                       Style="{StaticResource Titulo}"
+                       SemanticProperties.HeadingLevel="Level1" />
+
+                <Label Text="Escribe el correo con el que te registraste y te enviaremos un correo para recuperarla."
+                       Style="{StaticResource Subtitulo}"
+                       Margin="0,6,0,32" />
+
+                <Label Text="Correo electrónico"
+                       Style="{StaticResource EtiquetaCampo}" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Entry x:Name="txtCorreo"
+                           Style="{StaticResource CampoTexto}"
+                           Placeholder="tu@correo.com"
+                           Keyboard="Email"
+                           MaxLength="100"
+                           ReturnType="Send"
+                           SemanticProperties.Description="Correo electrónico" />
+                </Border>
+
+                <Label x:Name="lblMensaje"
+                       Style="{StaticResource MensajeError}"
+                       Margin="2,12,0,0" />
+
+                <Button x:Name="btnEnviar"
+                        Text="Enviar correo"
+                        Style="{StaticResource BotonPrimario}"
+                        Margin="0,28,0,0"
+                        Clicked="OnEnviarClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Pie fijo: volver al login -->
+        <VerticalStackLayout Grid.Row="1">
+            <BoxView Style="{StaticResource Separador}" />
+            <Border Style="{StaticResource BarraInferior}">
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="0">
+                    <Label Text="¿La recordaste?"
+                           Style="{StaticResource TextoPie}" />
+                    <Button x:Name="btnIrLogin"
+                            Text="Inicia sesión"
+                            Style="{StaticResource BotonEnlace}"
+                            Clicked="OnIrLoginClicked" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

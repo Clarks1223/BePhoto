@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrontEnd.Views.vRegistro"
+             Title=""
+             Style="{StaticResource PaginaAuth}">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,8,24,32"
+                                 Spacing="0"
+                                 MaximumWidthRequest="440">
+
+                <Label Text="Crea tu cuenta"
+                       Style="{StaticResource Titulo}"
+                       SemanticProperties.HeadingLevel="Level1" />
+
+                <Label Text="Empieza a compartir tus fotos con tus amigos."
+                       Style="{StaticResource Subtitulo}"
+                       Margin="0,6,0,32" />
+
+                <!-- Nombre y apellido en una fila -->
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label Text="Nombre"
+                               Style="{StaticResource EtiquetaCampo}" />
+                        <Border Style="{StaticResource CampoContenedor}">
+                            <Entry x:Name="txtNombre"
+                                   Style="{StaticResource CampoTexto}"
+                                   Placeholder="Ana"
+                                   MaxLength="50"
+                                   ReturnType="Next"
+                                   SemanticProperties.Description="Nombre" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="Apellido"
+                               Style="{StaticResource EtiquetaCampo}" />
+                        <Border Style="{StaticResource CampoContenedor}">
+                            <Entry x:Name="txtApellido"
+                                   Style="{StaticResource CampoTexto}"
+                                   Placeholder="Pérez"
+                                   MaxLength="50"
+                                   ReturnType="Next"
+                                   SemanticProperties.Description="Apellido" />
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Correo -->
+                <Label Text="Correo electrónico"
+                       Style="{StaticResource EtiquetaCampo}"
+                       Margin="2,20,0,6" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Entry x:Name="txtCorreo"
+                           Style="{StaticResource CampoTexto}"
+                           Placeholder="tu@correo.com"
+                           Keyboard="Email"
+                           MaxLength="100"
+                           ReturnType="Next"
+                           SemanticProperties.Description="Correo electrónico" />
+                </Border>
+
+                <!-- Contraseña -->
+                <Label Text="Contraseña"
+                       Style="{StaticResource EtiquetaCampo}"
+                       Margin="2,20,0,6" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry x:Name="txtContrasena"
+                               Style="{StaticResource CampoTexto}"
+                               Placeholder="Crea una contraseña"
+                               IsPassword="True"
+                               MaxLength="50"
+                               ReturnType="Next"
+                               SemanticProperties.Description="Contraseña" />
+                        <Button x:Name="btnMostrarContrasena"
+                                Grid.Column="1"
+                                Text="Mostrar"
+                                Style="{StaticResource BotonEnCampo}"
+                                Clicked="OnMostrarContrasenaClicked" />
+                    </Grid>
+                </Border>
+                <Label Text="Usa al menos 8 caracteres."
+                       Style="{StaticResource TextoAyuda}" />
+
+                <!-- Confirmar contraseña -->
+                <Label Text="Confirmar contraseña"
+                       Style="{StaticResource EtiquetaCampo}"
+                       Margin="2,20,0,6" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Entry x:Name="txtConfirmarContrasena"
+                           Style="{StaticResource CampoTexto}"
+                           Placeholder="Repite la contraseña"
+                           IsPassword="True"
+                           MaxLength="50"
+                           ReturnType="Done"
+                           SemanticProperties.Description="Confirmar contraseña" />
+                </Border>
+
+                <Label x:Name="lblMensaje"
+                       Style="{StaticResource MensajeError}"
+                       Margin="2,12,0,0" />
+
+                <Button x:Name="btnRegistrarse"
+                        Text="Crear cuenta"
+                        Style="{StaticResource BotonPrimario}"
+                        Margin="0,28,0,0"
+                        Clicked="OnRegistrarseClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Pie fijo: volver al login -->
+        <VerticalStackLayout Grid.Row="1">
+            <BoxView Style="{StaticResource Separador}" />
+            <Border Style="{StaticResource BarraInferior}">
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="0">
+                    <Label Text="¿Ya tienes cuenta?"
+                           Style="{StaticResource TextoPie}" />
+                    <Button x:Name="btnIrLogin"
+                            Text="Inicia sesión"
+                            Style="{StaticResource BotonEnlace}"
+                            Clicked="OnIrLoginClicked" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

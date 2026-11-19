@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrontEnd.Views.vLogin"
+             Title="Iniciar sesión"
+             Style="{StaticResource PaginaAuth}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,72,24,32"
+                                 Spacing="0"
+                                 MaximumWidthRequest="440">
+
+                <!-- Marca -->
+                <Border Style="{StaticResource LogoMosaico}">
+                    <Path Style="{StaticResource LogoIcono}"
+                          Data="M8,13 H13 L15.5,9 H24.5 L27,13 H32 A4,4 0 0 1 36,17 V30 A4,4 0 0 1 32,34 H8 A4,4 0 0 1 4,30 V17 A4,4 0 0 1 8,13 Z M20,16.5 A6.5,6.5 0 1 0 20,29.5 A6.5,6.5 0 1 0 20,16.5 Z" />
+                </Border>
+
+                <Label Text="BePhoto"
+                       Style="{StaticResource Marca}"
+                       Margin="0,16,0,0"
+                       SemanticProperties.HeadingLevel="Level1" />
+
+                <Label Text="Comparte tus fotos con tus amigos"
+                       Style="{StaticResource Subtitulo}"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,6,0,40" />
+
+                <!-- Correo -->
+                <Label Text="Correo electrónico"
+                       Style="{StaticResource EtiquetaCampo}" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Entry x:Name="txtCorreo"
+                           Style="{StaticResource CampoTexto}"
+                           Placeholder="tu@correo.com"
+                           Keyboard="Email"
+                           MaxLength="100"
+                           ReturnType="Next"
+                           SemanticProperties.Description="Correo electrónico" />
+                </Border>
+
+                <!-- Contraseña -->
+                <Label Text="Contraseña"
+                       Style="{StaticResource EtiquetaCampo}"
+                       Margin="2,20,0,6" />
+                <Border Style="{StaticResource CampoContenedor}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry x:Name="txtContrasena"
+                               Style="{StaticResource CampoTexto}"
+                               Placeholder="Tu contraseña"
+                               IsPassword="True"
+                               MaxLength="50"
+                               ReturnType="Done"
+                               SemanticProperties.Description="Contraseña" />
+                        <Button x:Name="btnMostrarContrasena"
+                                Grid.Column="1"
+                                Text="Mostrar"
+                                Style="{StaticResource BotonEnCampo}"
+                                Clicked="OnMostrarContrasenaClicked" />
+                    </Grid>
+                </Border>
+
+                <Button x:Name="btnOlvideContrasena"
+                        Text="¿Olvidaste tu contraseña?"
+                        Style="{StaticResource BotonEnlace}"
+                        FontSize="14"
+                        HorizontalOptions="End"
+                        Margin="0,6,-6,0"
+                        Clicked="OnOlvideContrasenaClicked" />
+
+                <Label x:Name="lblMensaje"
+                       Style="{StaticResource MensajeError}"
+                       Margin="2,4,0,0" />
+
+                <Button x:Name="btnIniciarSesion"
+                        Text="Iniciar sesión"
+                        Style="{StaticResource BotonPrimario}"
+                        Margin="0,20,0,0"
+                        Clicked="OnIniciarSesionClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Pie fijo: camino al registro -->
+        <VerticalStackLayout Grid.Row="1">
+            <BoxView Style="{StaticResource Separador}" />
+            <Border Style="{StaticResource BarraInferior}">
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="0">
+                    <Label Text="¿No tienes cuenta?"
+                           Style="{StaticResource TextoPie}" />
+                    <Button x:Name="btnIrRegistro"
+                            Text="Regístrate"
+                            Style="{StaticResource BotonEnlace}"
+                            Clicked="OnIrRegistroClicked" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
