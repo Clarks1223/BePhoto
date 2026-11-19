@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Tokens y estilos propios de BePhoto. Cada color tiene versión clara y oscura. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Colores: tema claro -->
+    <Color x:Key="FondoClaro">#FFFFFF</Color>
+    <Color x:Key="TextoClaro">#121212</Color>
+    <Color x:Key="TextoSecundarioClaro">#5F6168</Color>
+    <Color x:Key="CampoClaro">#F4F4F6</Color>
+    <Color x:Key="BordeClaro">#E2E3E8</Color>
+    <Color x:Key="PlaceholderClaro">#6E7078</Color>
+    <Color x:Key="SeparadorClaro">#ECECEF</Color>
+    <Color x:Key="EnlaceClaro">#5B4BFF</Color>
+    <Color x:Key="ErrorClaro">#C62828</Color>
+
+    <!-- Colores: tema oscuro -->
+    <Color x:Key="FondoOscuro">#0F0F12</Color>
+    <Color x:Key="TextoOscuro">#F2F2F5</Color>
+    <Color x:Key="TextoSecundarioOscuro">#A3A5AD</Color>
+    <Color x:Key="CampoOscuro">#1B1B20</Color>
+    <Color x:Key="BordeOscuro">#2C2D34</Color>
+    <Color x:Key="PlaceholderOscuro">#84868E</Color>
+    <Color x:Key="SeparadorOscuro">#24252B</Color>
+    <Color x:Key="EnlaceOscuro">#A39BFF</Color>
+    <Color x:Key="ErrorOscuro">#FF8A80</Color>
+
+    <!-- El violeta de la acción principal es el mismo en ambos temas:
+         con texto blanco tiene contraste 5.4:1. -->
+    <Color x:Key="Acento">#5B4BFF</Color>
+    <Color x:Key="AcentoPresionado">#4535E0</Color>
+    <Color x:Key="SobreAcento">#FFFFFF</Color>
+
+    <!-- Página -->
+    <Style x:Key="PaginaAuth" TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" />
+    </Style>
+
+    <!-- Marca -->
+    <Style x:Key="LogoMosaico" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Acento}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="WidthRequest" Value="72" />
+        <Setter Property="HeightRequest" Value="72" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 22" />
+        <Setter Property="AutomationProperties.IsInAccessibleTree" Value="False" />
+    </Style>
+
+    <Style x:Key="LogoIcono" TargetType="Path">
+        <Setter Property="Stroke" Value="{StaticResource SobreAcento}" />
+        <Setter Property="StrokeThickness" Value="2.6" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="WidthRequest" Value="40" />
+        <Setter Property="HeightRequest" Value="40" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="Marca" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.6" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- Textos -->
+    <Style x:Key="Titulo" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.4" />
+    </Style>
+
+    <Style x:Key="Subtitulo" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSecundarioClaro}, Dark={StaticResource TextoSecundarioOscuro}}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="LineHeight" Value="1.2" />
+    </Style>
+
+    <Style x:Key="EtiquetaCampo" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Margin" Value="2,0,0,6" />
+    </Style>
+
+    <Style x:Key="TextoAyuda" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSecundarioClaro}, Dark={StaticResource TextoSecundarioOscuro}}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="2,6,0,0" />
+    </Style>
+
+    <Style x:Key="TextoPie" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSecundarioClaro}, Dark={StaticResource TextoSecundarioOscuro}}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="MensajeError" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ErrorClaro}, Dark={StaticResource ErrorOscuro}}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- Campos: un Border relleno que envuelve un Entry sin borde propio.
+         Utils/ResaltadoCampo cambia el borde a violeta mientras el campo tiene el foco. -->
+    <Style x:Key="CampoContenedor" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CampoClaro}, Dark={StaticResource CampoOscuro}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        <Setter Property="HeightRequest" Value="52" />
+        <Setter Property="Padding" Value="16,0,6,0" />
+    </Style>
+
+    <Style x:Key="CampoTexto" TargetType="Entry">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource PlaceholderClaro}, Dark={StaticResource PlaceholderOscuro}}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="ClearButtonVisibility" Value="Never" />
+    </Style>
+
+    <!-- Botones -->
+    <Style x:Key="BotonPrimario" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Acento}" />
+        <Setter Property="TextColor" Value="{StaticResource SobreAcento}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="HeightRequest" Value="52" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{StaticResource AcentoPresionado}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.45" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+
+    <Style x:Key="BotonEnlace" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource EnlaceClaro}, Dark={StaticResource EnlaceOscuro}}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="MinimumWidthRequest" Value="48" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.6" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- "Mostrar" / "Ocultar" dentro del campo de contraseña -->
+    <Style x:Key="BotonEnCampo" TargetType="Button" BasedOn="{StaticResource BotonEnlace}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSecundarioClaro}, Dark={StaticResource TextoSecundarioOscuro}}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <!-- Barra superior de la app y menú de la cuenta (vInicio) -->
+    <Style x:Key="MarcaBarra" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.4" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- Burbuja circular con la foto del usuario; si no hay foto se ve la silueta. -->
+    <Style x:Key="Avatar" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Acento}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="Ellipse" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="AvatarSilueta" TargetType="Path">
+        <Setter Property="Stroke" Value="{StaticResource SobreAcento}" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <!-- Íconos de línea de 24: trazo 2 con puntas redondeadas, color del texto. -->
+    <Style x:Key="IconoLinea" TargetType="Path">
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="WidthRequest" Value="24" />
+        <Setter Property="HeightRequest" Value="24" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <!-- Tarjeta flotante del menú: superficie gris niebla con el grupo de opciones encima. -->
+    <Style x:Key="TarjetaMenu" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CampoClaro}, Dark={StaticResource CampoOscuro}}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 28" />
+        <Setter Property="Padding" Value="8,4,8,8" />
+    </Style>
+
+    <Style x:Key="GrupoOpciones" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+    </Style>
+
+    <Style x:Key="TextoOpcion" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- Filas de solo lectura (datos del usuario): etiqueta pequeña sobre el valor. -->
+    <Style x:Key="FilaDato" TargetType="VerticalStackLayout">
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="Spacing" Value="2" />
+    </Style>
+
+    <Style x:Key="EtiquetaDato" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSecundarioClaro}, Dark={StaticResource TextoSecundarioOscuro}}" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <Style x:Key="ValorDato" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="LineBreakMode" Value="TailTruncation" />
+    </Style>
+
+    <!-- Barra inferior con separador -->
+    <Style x:Key="BarraInferior" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Padding" Value="16,4,16,8" />
+    </Style>
+
+    <Style x:Key="Separador" TargetType="BoxView">
+        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource SeparadorClaro}, Dark={StaticResource SeparadorOscuro}}" />
+        <Setter Property="HeightRequest" Value="1" />
+    </Style>
+</ResourceDictionary>

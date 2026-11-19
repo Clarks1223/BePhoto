@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- colorPrimary pinta la barra de estado detrás de la barra de navegación del Shell:
+         igual al fondo de la página para que no aparezca una franja de color. -->
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#FFFFFF</color>
+    <!-- colorAccent: cursor y selección de texto en el violeta de BePhoto. -->
+    <color name="colorAccent">#5B4BFF</color>
+</resources>
