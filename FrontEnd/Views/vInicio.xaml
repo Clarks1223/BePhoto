@@ -2,21 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrontEnd.Views.vInicio"
-             Title="Inicio"
+             Title="Galería"
              Style="{StaticResource PaginaAuth}"
              Shell.NavBarIsVisible="False"
              SafeAreaEdges="None">
 
-    <!-- Dos capas: la pantalla y, encima, el menú de la cuenta (oculto hasta tocar la foto).
-         SafeAreaEdges: la pantalla y la tarjeta respetan las barras del sistema (Container),
-         pero el velo va de borde a borde (None) para oscurecer también detrás de ellas. -->
+    <!-- La galería usa datos de ejemplo hasta que se conecte el backend. -->
     <Grid SafeAreaEdges="None">
 
-        <!-- Capa 1: la pantalla -->
+        <!-- Pantalla principal -->
         <Grid RowDefinitions="Auto,*"
               SafeAreaEdges="Container">
 
-            <!-- Barra superior: marca a la izquierda y foto del usuario a la derecha -->
             <Grid Grid.Row="0"
                   ColumnDefinitions="*,Auto"
                   Padding="20,8,8,8">
@@ -24,7 +21,6 @@
                        Style="{StaticResource MarcaBarra}"
                        SemanticProperties.HeadingLevel="Level1" />
 
-                <!-- Área táctil de 48 alrededor de la burbuja de 36 -->
                 <Grid Grid.Column="1"
                       WidthRequest="48"
                       HeightRequest="48"
@@ -45,21 +41,119 @@
                 </Grid>
             </Grid>
 
-            <!-- Contenido -->
-            <VerticalStackLayout Grid.Row="1"
-                                 VerticalOptions="Center"
-                                 Padding="24,0,24,64"
-                                 Spacing="0">
-                <Border Style="{StaticResource LogoMosaico}">
-                    <Path Style="{StaticResource LogoIcono}"
-                          Data="M8,13 H13 L15.5,9 H24.5 L27,13 H32 A4,4 0 0 1 36,17 V30 A4,4 0 0 1 32,34 H8 A4,4 0 0 1 4,30 V17 A4,4 0 0 1 8,13 Z M20,16.5 A6.5,6.5 0 1 0 20,29.5 A6.5,6.5 0 1 0 20,16.5 Z" />
-                </Border>
+            <Grid Grid.Row="1"
+                  RowDefinitions="Auto,*,Auto"
+                  Padding="24,12,24,0">
+                <VerticalStackLayout Grid.Row="0"
+                                     Spacing="0">
+                    <Label Text="Mis recuerdos"
+                           Style="{StaticResource Titulo}"
+                           FontSize="28"
+                           SemanticProperties.HeadingLevel="Level1" />
+                    <Label Text="Tus lugares favoritos, guardados en fotos."
+                           Style="{StaticResource Subtitulo}"
+                           Margin="0,4,0,18" />
 
-                <Label Text="Bienvenido a BePhoto"
-                       Style="{StaticResource Titulo}"
-                       HorizontalTextAlignment="Center"
-                       Margin="0,20,0,0" />
-            </VerticalStackLayout>
+                    <Border Style="{StaticResource CampoContenedor}"
+                            Padding="14,0">
+                        <Grid ColumnDefinitions="Auto,*"
+                              ColumnSpacing="10">
+                            <Path Style="{StaticResource IconoLinea}"
+                                  Data="M15.5,15.5 L21,21 M10.5,18 A7.5,7.5 0 1 1 10.5,3 A7.5,7.5 0 0 1 10.5,18 Z" />
+                            <Entry x:Name="txtBusqueda"
+                                   Grid.Column="1"
+                                   Style="{StaticResource CampoTexto}"
+                                   Placeholder="Buscar por título o fecha"
+                                   ReturnType="Search"
+                                   TextChanged="OnBusquedaTextoCambiado"
+                                   SemanticProperties.Description="Buscar recuerdos por título o fecha" />
+                        </Grid>
+                    </Border>
+                    <Label x:Name="lblConteo"
+                           Text="3 recuerdos"
+                           Style="{StaticResource EtiquetaDato}"
+                           Margin="2,14,0,0" />
+                </VerticalStackLayout>
+
+                <Grid Grid.Row="1"
+                      Margin="0,12,0,12">
+                    <CollectionView x:Name="cvRecuerdos"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnRecuerdoSeleccionado">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical"
+                                             Span="2"
+                                             HorizontalItemSpacing="12"
+                                             VerticalItemSpacing="16" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource CampoOscuro}}"
+                                        Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 18"
+                                        Padding="0">
+                                    <Grid RowDefinitions="140,Auto">
+                                        <Image Grid.Row="0"
+                                               Source="{Binding Foto}"
+                                               Aspect="AspectFill" />
+                                        <VerticalStackLayout Grid.Row="1"
+                                                             Padding="12,10,12,12"
+                                                             Spacing="3">
+                                            <Label Text="{Binding Titulo}"
+                                                   Style="{StaticResource ValorDato}"
+                                                   FontAttributes="Bold"
+                                                   MaxLines="1" />
+                                            <Label Text="{Binding FechaTexto}"
+                                                   Style="{StaticResource EtiquetaDato}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <VerticalStackLayout x:Name="stkEstadoVacio"
+                                         IsVisible="False"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         MaximumWidthRequest="320"
+                                         Spacing="8">
+                        <Border Style="{StaticResource LogoMosaico}"
+                                WidthRequest="64"
+                                HeightRequest="64"
+                                StrokeShape="RoundRectangle 20">
+                            <Path Style="{StaticResource LogoIcono}"
+                                  WidthRequest="34"
+                                  HeightRequest="34"
+                                  Data="M8,13 H13 L15.5,9 H24.5 L27,13 H32 A4,4 0 0 1 36,17 V30 A4,4 0 0 1 32,34 H8 A4,4 0 0 1 4,30 V17 A4,4 0 0 1 8,13 Z M20,16.5 A6.5,6.5 0 1 0 20,29.5 A6.5,6.5 0 1 0 20,16.5 Z" />
+                        </Border>
+                        <Label x:Name="lblEstadoVacio"
+                               Text="Aún no tienes recuerdos guardados"
+                               Style="{StaticResource Titulo}"
+                               FontSize="20"
+                               HorizontalTextAlignment="Center"
+                               Margin="0,12,0,0" />
+                        <Label Text="Captura una foto para guardar el lugar y volver a él cuando quieras."
+                               Style="{StaticResource Subtitulo}"
+                               HorizontalTextAlignment="Center" />
+                        <Button x:Name="btnEstadoVacio"
+                                Text="Capturar recuerdo"
+                                Style="{StaticResource BotonPrimario}"
+                                Margin="0,12,0,0"
+                                Clicked="OnAccionEstadoVacioClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <VerticalStackLayout Grid.Row="2">
+                    <BoxView Style="{StaticResource Separador}"
+                             Margin="-24,0" />
+                    <Button Text="＋  Capturar recuerdo"
+                            Style="{StaticResource BotonPrimario}"
+                            Margin="0,12,0,16"
+                            Clicked="OnCapturarClicked" />
+                </VerticalStackLayout>
+            </Grid>
         </Grid>
 
         <!-- Capa 2: menú de la cuenta -->

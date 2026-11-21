@@ -14,7 +14,7 @@ namespace FrontEnd
             Items.Add(sesionIniciada
                 ? new ShellContent
                 {
-                    Title = "Inicio",
+                    Title = "Galería",
                     Route = "vInicio",
                     ContentTemplate = new DataTemplate(typeof(vInicio))
                 }
