@@ -32,21 +32,7 @@ namespace FrontEnd.Utils
                     Eliminar, Cancelar))
                 return false;
 
-            if (!await Conexion.Comprobar(pagina))
-                return false;
-
-            try
-            {
-                await RecuerdoRepository.EliminarAsync(recuerdo);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-                await pagina.DisplayAlertAsync("No se pudo eliminar",
-                    "Ocurrió un problema al eliminar la foto. Inténtalo de nuevo.", "Entendido");
-                return false;
-            }
+            return await Conexion.Ejecutar(pagina, _ => RecuerdoRepository.EliminarAsync(recuerdo));
         }
 
         public static string DetalleUbicacion(Recuerdo recuerdo) =>

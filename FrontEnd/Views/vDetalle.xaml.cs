@@ -69,28 +69,16 @@ namespace FrontEnd.Views
             if (_saliendo)
                 return;
             _saliendo = true;
-            lblMensaje.IsVisible = false;
             btnGuardar.IsEnabled = false;
 
-            try
+            if (await Conexion.Ejecutar(this,
+                    _ => RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text)))
             {
-                if (!await Conexion.Comprobar(this))
-                {
-                    btnGuardar.IsEnabled = true;
-                    _saliendo = false;
-                    return;
-                }
-                await RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text);
                 await Navigation.PopAsync();
+                return;
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-                lblMensaje.Text = "No se pudo guardar el detalle. Inténtalo de nuevo.";
-                lblMensaje.IsVisible = true;
-                btnGuardar.IsEnabled = true;
-                _saliendo = false;
-            }
+            btnGuardar.IsEnabled = HayCambios;
+            _saliendo = false;
         }
     }
 }

@@ -293,12 +293,13 @@ namespace FrontEnd.Views
             if (ubicacion is null)
                 return;
 
-            // La conexión pudo perderse mientras se tomaba la foto.
-            if (!await Conexion.Comprobar(this, "Descartar foto"))
-                return;
-
             btnCapturar.Text = "Guardando…";
-            Recuerdo recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha);
+            Recuerdo? recuerdo = null;
+            await Conexion.Ejecutar(this,
+                async _ => recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha),
+                "Descartar foto");
+            if (recuerdo is null)
+                return;
 
             _recuerdos = RecuerdoRepository.ObtenerTodos();
             if (string.IsNullOrEmpty(txtBusqueda.Text))

@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace FrontEnd.Utils
 {
     // Toda llamada al backend pasa por aquí: si falta internet o el servidor no
@@ -32,26 +34,33 @@ namespace FrontEnd.Utils
             boton.Text = "Espera un momento…";
             try
             {
-                while (true)
-                {
-                    if (!await Comprobar(pagina))
-                        return false;
-
-                    (string Titulo, string Texto)? problema = await Intentar(operacion);
-
-                    // El usuario pudo salir de la página mientras esperaba.
-                    if (!EstaVisible(pagina))
-                        return false;
-                    if (problema is not { } aviso)
-                        return true;
-                    if (!await pagina.DisplayAlertAsync(aviso.Titulo, aviso.Texto, "Reintentar", "Cancelar"))
-                        return false;
-                }
+                return await Ejecutar(pagina, operacion);
             }
             finally
             {
                 boton.Text = textoOriginal;
                 boton.IsEnabled = true;
+            }
+        }
+
+        // Para acciones sin botón propio, o cuya pantalla ya controla el suyo.
+        public static async Task<bool> Ejecutar(
+            Page pagina, Func<CancellationToken, Task> operacion, string cancelar = "Cancelar")
+        {
+            while (true)
+            {
+                if (!await Comprobar(pagina, cancelar))
+                    return false;
+
+                (string Titulo, string Texto)? problema = await Intentar(operacion);
+
+                // El usuario pudo salir de la página mientras esperaba.
+                if (!EstaVisible(pagina))
+                    return false;
+                if (problema is not { } aviso)
+                    return true;
+                if (!await pagina.DisplayAlertAsync(aviso.Titulo, aviso.Texto, "Reintentar", cancelar))
+                    return false;
             }
         }
 
@@ -69,15 +78,15 @@ namespace FrontEnd.Utils
                 System.Diagnostics.Debug.WriteLine(ex);
                 return ("El servidor tarda en responder", "Tu conexión puede estar lenta. Inténtalo de nuevo.");
             }
-            catch (Exception ex) when (ex is HttpRequestException { StatusCode: null } or IOException)
+            catch (Exception ex) when (ex is HttpRequestException { StatusCode: null or >= HttpStatusCode.InternalServerError } or HttpIOException)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return ("No se pudo conectar", "No logramos comunicarnos con el servidor. Revisa tu conexión e inténtalo de nuevo.");
+                return ("No se pudo conectar", "El servidor no está disponible en este momento. Inténtalo de nuevo.");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return ("Algo salió mal", "Ocurrió un problema con el servidor. Inténtalo de nuevo más tarde.");
+                return ("Algo salió mal", "Ocurrió un problema inesperado. Inténtalo de nuevo.");
             }
         }
 

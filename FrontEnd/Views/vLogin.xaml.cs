@@ -28,7 +28,7 @@ namespace FrontEnd.Views
 
             // TODO: enviar txtCorreo y txtContrasena al backend y entrar solo si
             // las credenciales son correctas. Por ahora entra directamente.
-            if (!await Conexion.Ejecutar(this, btnIniciarSesion, _ => Task.CompletedTask))
+            if (!await Conexion.Ejecutar(this, btnIniciarSesion, async t => { using var h = new HttpClient(); await h.GetAsync(txtContrasena.Text == "apagado" ? "https://10.0.2.2:5999/" : "https://10.0.2.2:5998/", t); }))
                 return;
 
             App.CambiarRaiz(sesionIniciada: true);
