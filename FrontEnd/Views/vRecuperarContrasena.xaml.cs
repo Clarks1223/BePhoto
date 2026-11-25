@@ -12,6 +12,10 @@ namespace FrontEnd.Views
 
         private async void OnEnviarClicked(object? sender, EventArgs e)
         {
+            if (!Formulario.Validar(lblMensaje,
+                    (txtCorreo, Reglas.Correo)))
+                return;
+
             // TODO: enviar txtCorreo al backend para que mande el correo de
             // recuperación. Por ahora solo se pasa a la pantalla de cambiar la
             // contraseña para poder recorrer el flujo.

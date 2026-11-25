@@ -84,7 +84,7 @@
                                 Clicked="OnMostrarContrasenaClicked" />
                     </Grid>
                 </Border>
-                <Label Text="Usa al menos 8 caracteres."
+                <Label Text="Usa al menos 8 caracteres, con una mayúscula, una minúscula y un carácter especial."
                        Style="{StaticResource TextoAyuda}" />
 
                 <!-- Confirmar contraseña -->

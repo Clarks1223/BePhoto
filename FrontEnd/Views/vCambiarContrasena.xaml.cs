@@ -28,7 +28,16 @@ namespace FrontEnd.Views
 
         private async void OnCambiarContrasenaClicked(object? sender, EventArgs e)
         {
-            // TODO: validar los campos y enviarlos al backend (incluida la
+            if (_requiereContrasenaActual && !Formulario.Validar(lblMensaje,
+                    (txtContrasenaActual, Reglas.Obligatorio("Escribe tu contraseña actual."))))
+                return;
+
+            if (!Formulario.Validar(lblMensaje,
+                    (txtNuevaContrasena, Reglas.Contrasena),
+                    (txtConfirmarContrasena, Reglas.Coincide(() => txtNuevaContrasena.Text))))
+                return;
+
+            // TODO: enviar los campos al backend (incluida la
             // contraseña actual cuando _requiereContrasenaActual es true).
             if (_requiereContrasenaActual)
                 await Navigation.PopAsync();       // vuelve a la app

@@ -23,12 +23,15 @@ namespace FrontEnd.Views
 
         private async void OnGuardarClicked(object? sender, EventArgs e)
         {
+            if (!Formulario.Validar(lblMensaje,
+                    (txtDetalle, Reglas.Texto("El detalle"))))
+                return;
+
             btnGuardar.IsEnabled = false;
-            lblMensaje.IsVisible = false;
 
             try
             {
-                await RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text?.Trim() ?? string.Empty);
+                await RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text);
                 await Navigation.PopAsync();
             }
             catch (Exception ex)

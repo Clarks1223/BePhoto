@@ -12,7 +12,15 @@ namespace FrontEnd.Views
 
         private void OnRegistrarseClicked(object? sender, EventArgs e)
         {
-            // TODO: validar los campos y enviar los datos al backend para crear
+            if (!Formulario.Validar(lblMensaje,
+                    (txtNombre, Reglas.Texto("El nombre")),
+                    (txtApellido, Reglas.Texto("El apellido")),
+                    (txtCorreo, Reglas.Correo),
+                    (txtContrasena, Reglas.Contrasena),
+                    (txtConfirmarContrasena, Reglas.Coincide(() => txtContrasena.Text))))
+                return;
+
+            // TODO: enviar los datos al backend para crear
             // la cuenta. Por ahora el botón no hace nada.
         }
 
