@@ -7,6 +7,9 @@ namespace FrontEnd.Utils
         private const double GrosorNormal = 1;
         private const double GrosorFoco = 2;
 
+        private static readonly BindableProperty ConErrorProperty =
+            BindableProperty.CreateAttached("ConError", typeof(bool), typeof(ResaltadoCampo), false);
+
         public static void Aplicar(params InputView[] campos)
         {
             foreach (InputView campo in campos)
@@ -16,27 +19,40 @@ namespace FrontEnd.Utils
             }
         }
 
+        // Con error, el borde se queda en rojo aunque el campo tenga el foco.
+        public static void MarcarError(InputView campo, bool conError)
+        {
+            Border? contenedor = BuscarContenedor(campo);
+            if (contenedor is null || (bool)campo.GetValue(ConErrorProperty) == conError)
+                return;
+
+            campo.SetValue(ConErrorProperty, conError);
+            if (Application.Current?.Resources.TryGetValue(
+                    conError ? "CampoConError" : "CampoContenedor", out object? estilo) == true)
+                contenedor.Style = (Style)estilo;
+            Pintar(campo, campo.IsFocused);
+        }
+
         private static void Pintar(InputView campo, bool conFoco)
         {
             Border? contenedor = BuscarContenedor(campo);
             if (contenedor is null)
                 return;
 
-            if (conFoco)
+            if (conFoco && !(bool)campo.GetValue(ConErrorProperty))
             {
                 contenedor.Stroke = Recurso("Acento");
-                contenedor.StrokeThickness = GrosorFoco;
             }
             else
             {
-                // Quitar el valor local hace que el borde vuelva al del estilo
-                // CampoContenedor, que ya cambia solo entre tema claro y oscuro.
+                // Quitar el valor local hace que el borde vuelva al de su estilo,
+                // que ya cambia solo entre tema claro y oscuro.
                 contenedor.ClearValue(Border.StrokeProperty);
-                contenedor.StrokeThickness = GrosorNormal;
             }
+            contenedor.StrokeThickness = conFoco ? GrosorFoco : GrosorNormal;
         }
 
-        private static Border? BuscarContenedor(Element elemento)
+        public static Border? BuscarContenedor(Element elemento)
         {
             Element? actual = elemento.Parent;
             while (actual is not null and not Border)

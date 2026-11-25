@@ -8,11 +8,14 @@ namespace FrontEnd.Views
         {
             InitializeComponent();
             ResaltadoCampo.Aplicar(txtNombre, txtApellido, txtCorreo, txtContrasena, txtConfirmarContrasena);
+            Formulario.EnviarConTeclado(btnRegistrarse.SendClicked,
+                txtNombre, txtApellido, txtCorreo, txtContrasena, txtConfirmarContrasena);
+            stkRequisitos.Seguir(txtContrasena);
         }
 
-        private void OnRegistrarseClicked(object? sender, EventArgs e)
+        private async void OnRegistrarseClicked(object? sender, EventArgs e)
         {
-            if (!Formulario.Validar(lblMensaje,
+            if (!Formulario.Validar(
                     (txtNombre, Reglas.Texto("El nombre")),
                     (txtApellido, Reglas.Texto("El apellido")),
                     (txtCorreo, Reglas.Correo),
@@ -21,7 +24,9 @@ namespace FrontEnd.Views
                 return;
 
             // TODO: enviar los datos al backend para crear
-            // la cuenta. Por ahora el botón no hace nada.
+            // la cuenta. Por ahora solo se comprueba la conexión.
+            if (!await Conexion.Ejecutar(this, btnRegistrarse, _ => Task.CompletedTask))
+                return;
         }
 
         // Muestra u oculta las dos contraseñas a la vez para poder compararlas.

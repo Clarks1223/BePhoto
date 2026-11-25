@@ -8,17 +8,29 @@ namespace FrontEnd.Views
         {
             InitializeComponent();
             ResaltadoCampo.Aplicar(txtCorreo, txtContrasena);
+            Formulario.EnviarConTeclado(btnIniciarSesion.SendClicked, txtCorreo, txtContrasena);
         }
 
-        private void OnIniciarSesionClicked(object? sender, EventArgs e)
+        protected override bool OnBackButtonPressed()
         {
-            if (!Formulario.Validar(lblMensaje,
+            // MAUI falla si la actividad se cierra con un campo enfocado.
+            txtCorreo.Unfocus();
+            txtContrasena.Unfocus();
+            return base.OnBackButtonPressed();
+        }
+
+        private async void OnIniciarSesionClicked(object? sender, EventArgs e)
+        {
+            if (!Formulario.Validar(
                     (txtCorreo, Reglas.Correo),
                     (txtContrasena, Reglas.Obligatorio("Escribe tu contraseña."))))
                 return;
 
             // TODO: enviar txtCorreo y txtContrasena al backend y entrar solo si
             // las credenciales son correctas. Por ahora entra directamente.
+            if (!await Conexion.Ejecutar(this, btnIniciarSesion, _ => Task.CompletedTask))
+                return;
+
             App.CambiarRaiz(sesionIniciada: true);
         }
 

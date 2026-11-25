@@ -171,6 +171,27 @@
             </Grid>
         </Grid>
 
+        <!-- Aviso breve sobre el botón de capturar -->
+        <Grid SafeAreaEdges="Container"
+              InputTransparent="True">
+            <Border x:Name="brdAviso"
+                    Style="{StaticResource TarjetaMenu}"
+                    IsVisible="False"
+                    Opacity="0"
+                    VerticalOptions="End"
+                    Padding="16,12"
+                    Margin="24,0,24,96"
+                    MaximumWidthRequest="440">
+                <VerticalStackLayout Spacing="2">
+                    <Label x:Name="lblAvisoTitulo"
+                           Style="{StaticResource EtiquetaCampo}"
+                           Margin="0" />
+                    <Label x:Name="lblAvisoTexto"
+                           Style="{StaticResource EtiquetaDato}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
         <!-- Panel que entra desde la derecha al abrir el mapa -->
         <Grid x:Name="grdPanelMapa"
               IsVisible="False"

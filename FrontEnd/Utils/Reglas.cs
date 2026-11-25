@@ -34,16 +34,21 @@ namespace FrontEnd.Utils
                 : "Escribe un correo válido, por ejemplo tu@correo.com.";
         }
 
+        public static readonly IReadOnlyList<(string Texto, Func<string, bool> Cumple)> RequisitosContrasena =
+        [
+            ($"al menos {MinContrasena} caracteres", valor => valor.Length >= MinContrasena),
+            ("una mayúscula", valor => valor.Any(char.IsUpper)),
+            ("una minúscula", valor => valor.Any(char.IsLower)),
+            ("un carácter especial", valor => valor.Any(c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c))),
+        ];
+
         public static string? Contrasena(string valor)
         {
-            if (valor.Length < MinContrasena)
-                return $"La contraseña debe tener al menos {MinContrasena} caracteres.";
-            if (!valor.Any(char.IsUpper))
-                return "La contraseña debe tener al menos una mayúscula.";
-            if (!valor.Any(char.IsLower))
-                return "La contraseña debe tener al menos una minúscula.";
-            if (!valor.Any(c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)))
-                return "La contraseña debe tener al menos un carácter especial.";
+            foreach ((string texto, Func<string, bool> cumple) in RequisitosContrasena)
+            {
+                if (!cumple(valor))
+                    return $"La contraseña debe tener {texto}.";
+            }
             return null;
         }
     }

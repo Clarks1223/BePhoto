@@ -32,6 +32,9 @@ namespace FrontEnd.Utils
                     Eliminar, Cancelar))
                 return false;
 
+            if (!await Conexion.Comprobar(pagina))
+                return false;
+
             try
             {
                 await RecuerdoRepository.EliminarAsync(recuerdo);

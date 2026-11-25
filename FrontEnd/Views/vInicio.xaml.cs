@@ -11,6 +11,7 @@ namespace FrontEnd.Views
         private const uint DuracionMapa = 300;
         private const double DistanciaAbrirMapa = 80;
         private static readonly TimeSpan EsperaUbicacion = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan EsperaAviso = TimeSpan.FromSeconds(4);
         private const uint DuracionMenu = 200;
         private const double DesplazamientoMenu = -16;
 
@@ -24,6 +25,7 @@ namespace FrontEnd.Views
         private bool _abriendoMapa;
         private bool _mapaAbierto;
         private double _distanciaArrastre;
+        private int _turnoAviso;
 
         public vInicio()
         {
@@ -257,6 +259,10 @@ namespace FrontEnd.Views
 
         private async Task CapturarRecuerdo()
         {
+            // La foto se subirá al servidor: sin internet no se abre la cámara.
+            if (!await Conexion.Comprobar(this))
+                return;
+
             // Los permisos se piden antes, para no perder una foto ya tomada.
             if (await Permissions.RequestAsync<Permissions.Camera>() != PermissionStatus.Granted)
             {
@@ -287,6 +293,10 @@ namespace FrontEnd.Views
             if (ubicacion is null)
                 return;
 
+            // La conexión pudo perderse mientras se tomaba la foto.
+            if (!await Conexion.Comprobar(this, "Descartar foto"))
+                return;
+
             btnCapturar.Text = "Guardando…";
             Recuerdo recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha);
 
@@ -296,7 +306,38 @@ namespace FrontEnd.Views
             else
                 txtBusqueda.Text = string.Empty;
 
-            await DisplayAlertAsync("Recuerdo guardado", AccionesRecuerdo.DetalleUbicacion(recuerdo), "Entendido");
+            _ = MostrarAviso("Recuerdo guardado", AccionesRecuerdo.DetalleUbicacion(recuerdo));
+        }
+
+        // Aviso que se va solo, con una vibración corta.
+        private async Task MostrarAviso(string titulo, string texto)
+        {
+            int turno = ++_turnoAviso;
+            lblAvisoTitulo.Text = titulo;
+            lblAvisoTexto.Text = texto;
+            SemanticScreenReader.Announce($"{titulo}. {texto}");
+
+            try
+            {
+                HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+            }
+            catch (Exception ex)
+            {
+                // Sin vibración el aviso sigue siendo útil.
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+
+            brdAviso.CancelAnimations();
+            brdAviso.IsVisible = true;
+            await brdAviso.FadeToAsync(1, DuracionMenu);
+            await Task.Delay(EsperaAviso);
+
+            // Si llegó otro aviso mientras tanto, ese se encarga de ocultarlo.
+            if (turno != _turnoAviso)
+                return;
+            await brdAviso.FadeToAsync(0, DuracionMenu);
+            if (turno == _turnoAviso)
+                brdAviso.IsVisible = false;
         }
 
         // Insiste hasta tener una lectura del GPS o hasta que el usuario descarte la foto.
@@ -315,12 +356,28 @@ namespace FrontEnd.Views
                 }
                 catch (FeatureNotEnabledException)
                 {
-                    problema = "La ubicación del teléfono está apagada. Actívala y vuelve a intentarlo.";
+                    if (!await OfrecerActivarUbicacion())
+                        return null;
+                    continue;
                 }
 
                 if (!await DisplayAlertAsync("Sin ubicación", problema, "Reintentar", "Descartar foto"))
                     return null;
             }
+        }
+
+        // Devuelve false si el usuario descarta la foto.
+        private async Task<bool> OfrecerActivarUbicacion()
+        {
+            const string abrir = "Abrir ajustes";
+            const string descartar = "Descartar foto";
+
+            string? opcion = await DisplayActionSheetAsync(
+                "La ubicación del teléfono está apagada", null, descartar, abrir, "Reintentar");
+
+            if (opcion == abrir)
+                await AjustesUbicacion.AbrirYEsperar(Window);
+            return opcion != descartar;
         }
 
         private async Task OfrecerAjustes(string mensaje)

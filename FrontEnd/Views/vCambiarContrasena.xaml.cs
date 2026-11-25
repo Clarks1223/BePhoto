@@ -24,21 +24,30 @@ namespace FrontEnd.Views
             }
 
             ResaltadoCampo.Aplicar(txtContrasenaActual, txtNuevaContrasena, txtConfirmarContrasena);
+            Entry[] nuevas = [txtNuevaContrasena, txtConfirmarContrasena];
+            Formulario.EnviarConTeclado(btnCambiarContrasena.SendClicked,
+                requiereContrasenaActual ? [txtContrasenaActual, .. nuevas] : nuevas);
+            stkRequisitos.Seguir(txtNuevaContrasena);
         }
 
         private async void OnCambiarContrasenaClicked(object? sender, EventArgs e)
         {
-            if (_requiereContrasenaActual && !Formulario.Validar(lblMensaje,
-                    (txtContrasenaActual, Reglas.Obligatorio("Escribe tu contraseña actual."))))
-                return;
+            var campos = new List<(InputView Campo, Func<string, string?> Regla)>
+            {
+                (txtNuevaContrasena, Reglas.Contrasena),
+                (txtConfirmarContrasena, Reglas.Coincide(() => txtNuevaContrasena.Text))
+            };
+            if (_requiereContrasenaActual)
+                campos.Insert(0, (txtContrasenaActual, Reglas.Obligatorio("Escribe tu contraseña actual.")));
 
-            if (!Formulario.Validar(lblMensaje,
-                    (txtNuevaContrasena, Reglas.Contrasena),
-                    (txtConfirmarContrasena, Reglas.Coincide(() => txtNuevaContrasena.Text))))
+            if (!Formulario.Validar([.. campos]))
                 return;
 
             // TODO: enviar los campos al backend (incluida la
             // contraseña actual cuando _requiereContrasenaActual es true).
+            if (!await Conexion.Ejecutar(this, btnCambiarContrasena, _ => Task.CompletedTask))
+                return;
+
             if (_requiereContrasenaActual)
                 await Navigation.PopAsync();       // vuelve a la app
             else

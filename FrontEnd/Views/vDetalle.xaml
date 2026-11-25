@@ -5,6 +5,11 @@
              Title=""
              Style="{StaticResource PaginaAuth}">
 
+    <!-- La flecha de la barra; el botón Atrás de Android se atiende en el .cs. -->
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior x:Name="bbVolver" />
+    </Shell.BackButtonBehavior>
+
     <ScrollView>
         <VerticalStackLayout Padding="24,8,24,32"
                              Spacing="0"
@@ -28,9 +33,14 @@
                         FontSize="16"
                         AutoSize="TextChanges"
                         MaxLength="300"
+                        TextChanged="OnDetalleCambiado"
                         Placeholder="Cuenta algo de este recuerdo"
                         SemanticProperties.Description="Detalle de la foto" />
             </Border>
+
+            <Label x:Name="lblContador"
+                   Style="{StaticResource TextoAyuda}"
+                   HorizontalTextAlignment="End" />
 
             <!-- Datos de la captura (solo lectura) -->
             <VerticalStackLayout Margin="2,24,0,0"
@@ -64,6 +74,7 @@
                     Text="Guardar cambios"
                     Style="{StaticResource BotonPrimario}"
                     Margin="0,28,0,0"
+                    IsEnabled="False"
                     Clicked="OnGuardarClicked" />
         </VerticalStackLayout>
     </ScrollView>

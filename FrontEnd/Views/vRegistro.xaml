@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:utils="clr-namespace:FrontEnd.Utils"
              x:Class="FrontEnd.Views.vRegistro"
              Title=""
              Style="{StaticResource PaginaAuth}">
@@ -84,8 +85,7 @@
                                 Clicked="OnMostrarContrasenaClicked" />
                     </Grid>
                 </Border>
-                <Label Text="Usa al menos 8 caracteres, con una mayúscula, una minúscula y un carácter especial."
-                       Style="{StaticResource TextoAyuda}" />
+                <utils:RequisitosContrasena x:Name="stkRequisitos" />
 
                 <!-- Confirmar contraseña -->
                 <Label Text="Confirmar contraseña"
