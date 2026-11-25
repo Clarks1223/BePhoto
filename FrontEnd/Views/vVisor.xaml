@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Foto en pantalla completa. Siempre sobre negro, también con tema claro. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FrontEnd.Models"
+             xmlns:utils="clr-namespace:FrontEnd.Utils"
+             x:Class="FrontEnd.Views.vVisor"
+             Title="Foto"
+             BackgroundColor="Black"
+             Shell.NavBarIsVisible="False"
+             SafeAreaEdges="None">
+
+    <Grid SafeAreaEdges="None">
+        <CarouselView x:Name="crvFotos"
+                      Loop="False"
+                      IsScrollAnimated="False"
+                      ItemsUpdatingScrollMode="KeepScrollOffset"
+                      HorizontalScrollBarVisibility="Never"
+                      PositionChanged="OnPosicionCambiada">
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"
+                                   SnapPointsType="MandatorySingle"
+                                   SnapPointsAlignment="Center" />
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="models:Recuerdo">
+                    <Grid BackgroundColor="Black"
+                          SafeAreaEdges="None"
+                          SemanticProperties.Description="{Binding TextoAccesible}"
+                          SemanticProperties.Hint="Mantén presionado para ver las opciones">
+                        <Grid.Behaviors>
+                            <utils:ToqueFoto Mantenida="OnFotoMantenida" />
+                        </Grid.Behaviors>
+                        <Image Source="{Binding Foto}"
+                               Aspect="AspectFit" />
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+
+        <!-- Controles sobre la foto; el degradado los mantiene legibles -->
+        <Grid VerticalOptions="Start"
+              SafeAreaEdges="Container">
+            <Grid.Background>
+                <LinearGradientBrush EndPoint="0,1">
+                    <GradientStop Color="#99000000" Offset="0" />
+                    <GradientStop Color="#00000000" Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+            <Grid ColumnDefinitions="48,*,48"
+                  HeightRequest="64"
+                  Padding="8">
+                <Grid SemanticProperties.Description="Volver a mis recuerdos">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnVolverTapped" />
+                    </Grid.GestureRecognizers>
+                    <Path Style="{StaticResource IconoLinea}"
+                          Stroke="White"
+                          Data="M20,12 H4 M11,5 L4,12 L11,19" />
+                </Grid>
+                <Label x:Name="lblPosicion"
+                       Grid.Column="1"
+                       TextColor="White"
+                       FontSize="16"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center" />
+                <Grid Grid.Column="2"
+                      SemanticProperties.Description="Eliminar foto">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEliminarTapped" />
+                    </Grid.GestureRecognizers>
+                    <Path Style="{StaticResource IconoLinea}"
+                          Stroke="White"
+                          Data="M4,7 H20 M9,7 V4 H15 V7 M6,7 L7,20 H17 L18,7 M10,11 V16 M14,11 V16" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

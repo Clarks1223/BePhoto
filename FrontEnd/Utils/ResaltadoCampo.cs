@@ -1,22 +1,22 @@
 namespace FrontEnd.Utils
 {
-    // Pinta de violeta el borde del campo (el Border que envuelve al Entry)
-    // mientras el Entry tiene el foco, y lo regresa a su color normal al salir.
+    // Pinta de violeta el borde del campo (el Border que envuelve al Entry o Editor)
+    // mientras tiene el foco, y lo regresa a su color normal al salir.
     public static class ResaltadoCampo
     {
         private const double GrosorNormal = 1;
         private const double GrosorFoco = 2;
 
-        public static void Aplicar(params Entry[] campos)
+        public static void Aplicar(params InputView[] campos)
         {
-            foreach (Entry campo in campos)
+            foreach (InputView campo in campos)
             {
                 campo.Focused += (_, _) => Pintar(campo, conFoco: true);
                 campo.Unfocused += (_, _) => Pintar(campo, conFoco: false);
             }
         }
 
-        private static void Pintar(Entry campo, bool conFoco)
+        private static void Pintar(InputView campo, bool conFoco)
         {
             Border? contenedor = BuscarContenedor(campo);
             if (contenedor is null)

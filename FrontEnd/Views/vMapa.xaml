@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:FrontEnd.Views"
+             xmlns:models="clr-namespace:FrontEnd.Models"
+             x:Class="FrontEnd.Views.vMapa"
+             Title="Mapa"
+             Style="{StaticResource PaginaAuth}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="64,*">
+
+        <!-- Encabezado y aviso de carga -->
+        <views:vPanelMapa Grid.RowSpan="2" />
+
+        <Grid WidthRequest="56"
+              HorizontalOptions="Start"
+              SemanticProperties.Description="Volver a mis recuerdos">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnVolverTapped" />
+            </Grid.GestureRecognizers>
+        </Grid>
+
+        <HybridWebView x:Name="wvMapa"
+                       Grid.Row="1"
+                       Opacity="0"
+                       HybridRoot="mapa"
+                       DefaultFile="index.html"
+                       RawMessageReceived="OnMensajeMapa" />
+
+        <!-- Aviso sin conexión -->
+        <Border x:Name="brdSinConexion"
+                Grid.Row="1"
+                IsVisible="False"
+                Style="{StaticResource TarjetaMenu}"
+                VerticalOptions="Start"
+                Margin="12"
+                Padding="16,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="No se pudo cargar el mapa. Revisa tu conexión."
+                       Style="{StaticResource TextoPie}" />
+                <Button Grid.Column="1"
+                        Text="Reintentar"
+                        Style="{StaticResource BotonEnlace}"
+                        Clicked="OnReintentarClicked" />
+            </Grid>
+        </Border>
+
+        <!-- Detalle del recuerdo elegido -->
+        <Border x:Name="brdDetalle"
+                Grid.Row="1"
+                x:DataType="models:Recuerdo"
+                IsVisible="False"
+                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource CampoOscuro}}"
+                Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 18"
+                VerticalOptions="End"
+                Margin="12,0,12,28"
+                MaximumWidthRequest="440">
+            <Grid ColumnDefinitions="112,*,48">
+                <Image Source="{Binding Foto}"
+                       Aspect="AspectFill"
+                       WidthRequest="112"
+                       HeightRequest="132"
+                       VerticalOptions="Fill" />
+                <VerticalStackLayout Grid.Column="1"
+                                     Padding="12,12,0,12"
+                                     Spacing="3"
+                                     VerticalOptions="Center">
+                    <Label Text="{Binding FechaTexto}"
+                           Style="{StaticResource ValorDato}"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding DetalleTexto}"
+                           Style="{StaticResource EtiquetaDato}"
+                           MaxLines="3"
+                           LineBreakMode="TailTruncation" />
+                    <Label Text="{Binding Coordenadas}"
+                           Style="{StaticResource EtiquetaDato}" />
+                </VerticalStackLayout>
+                <Grid Grid.Column="2"
+                      HeightRequest="48"
+                      VerticalOptions="Start"
+                      SemanticProperties.Description="Cerrar el detalle">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCerrarDetalleTapped" />
+                    </Grid.GestureRecognizers>
+                    <Path Style="{StaticResource IconoLinea}"
+                          Data="M6,6 L18,18 M18,6 L6,18" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

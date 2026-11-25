@@ -16,6 +16,15 @@ namespace FrontEnd.Utils
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #endif
             });
+
+#if ANDROID
+            Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("SinBorde", (handler, _) =>
+            {
+                handler.PlatformView.BackgroundTintList =
+                    Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
+                handler.PlatformView.SetPadding(0, 0, 0, 0);
+            });
+#endif
         }
     }
 }

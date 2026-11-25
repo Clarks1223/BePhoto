@@ -63,6 +63,9 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
+		<!-- El mapa (HybridWebView) solo puede leer assets, así que las fotos de ejemplo también van ahí -->
+		<MauiAsset Include="Resources\Images\recuerdo_*.svg" LogicalName="mapa/fotos/%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<ItemGroup>

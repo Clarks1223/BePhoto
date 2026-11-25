@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:FrontEnd.Views"
+             xmlns:utils="clr-namespace:FrontEnd.Utils"
              x:Class="FrontEnd.Views.vInicio"
              Title="Galería"
              Style="{StaticResource PaginaAuth}"
@@ -15,13 +17,24 @@
               SafeAreaEdges="Container">
 
             <Grid Grid.Row="0"
-                  ColumnDefinitions="*,Auto"
+                  ColumnDefinitions="*,Auto,Auto"
                   Padding="20,8,8,8">
                 <Label Text="BePhoto"
                        Style="{StaticResource MarcaBarra}"
                        SemanticProperties.HeadingLevel="Level1" />
 
                 <Grid Grid.Column="1"
+                      WidthRequest="48"
+                      HeightRequest="48"
+                      SemanticProperties.Description="Ver el mapa de recuerdos">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </Grid.GestureRecognizers>
+                    <Path Style="{StaticResource IconoLinea}"
+                          Data="M3,6 L9,3 L15,6 L21,3 V18 L15,21 L9,18 L3,21 Z M9,3 V18 M15,6 V21" />
+                </Grid>
+
+                <Grid Grid.Column="2"
                       WidthRequest="48"
                       HeightRequest="48"
                       SemanticProperties.Description="Abrir el menú de tu cuenta">
@@ -63,10 +76,10 @@
                             <Entry x:Name="txtBusqueda"
                                    Grid.Column="1"
                                    Style="{StaticResource CampoTexto}"
-                                   Placeholder="Buscar por título o fecha"
+                                   Placeholder="Buscar por detalle o fecha"
                                    ReturnType="Search"
                                    TextChanged="OnBusquedaTextoCambiado"
-                                   SemanticProperties.Description="Buscar recuerdos por título o fecha" />
+                                   SemanticProperties.Description="Buscar recuerdos por detalle o fecha" />
                         </Grid>
                     </Border>
                     <Label x:Name="lblConteo"
@@ -78,8 +91,7 @@
                 <Grid Grid.Row="1"
                       Margin="0,12,0,12">
                     <CollectionView x:Name="cvRecuerdos"
-                                    SelectionMode="Single"
-                                    SelectionChanged="OnRecuerdoSeleccionado">
+                                    SelectionMode="None">
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Vertical"
                                              Span="2"
@@ -92,7 +104,13 @@
                                         Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
                                         StrokeThickness="1"
                                         StrokeShape="RoundRectangle 18"
-                                        Padding="0">
+                                        Padding="0"
+                                        SemanticProperties.Description="{Binding TextoAccesible}"
+                                        SemanticProperties.Hint="Toca para abrir la foto o mantén presionado para ver las opciones">
+                                    <Border.Behaviors>
+                                        <utils:ToqueFoto Tocada="OnRecuerdoTocado"
+                                                         Mantenida="OnRecuerdoMantenido" />
+                                    </Border.Behaviors>
                                     <Grid RowDefinitions="140,Auto">
                                         <Image Grid.Row="0"
                                                Source="{Binding Foto}"
@@ -100,10 +118,6 @@
                                         <VerticalStackLayout Grid.Row="1"
                                                              Padding="12,10,12,12"
                                                              Spacing="3">
-                                            <Label Text="{Binding Titulo}"
-                                                   Style="{StaticResource ValorDato}"
-                                                   FontAttributes="Bold"
-                                                   MaxLines="1" />
                                             <Label Text="{Binding FechaTexto}"
                                                    Style="{StaticResource EtiquetaDato}" />
                                         </VerticalStackLayout>
@@ -148,12 +162,20 @@
                 <VerticalStackLayout Grid.Row="2">
                     <BoxView Style="{StaticResource Separador}"
                              Margin="-24,0" />
-                    <Button Text="＋  Capturar recuerdo"
+                    <Button x:Name="btnCapturar"
+                            Text="＋  Capturar recuerdo"
                             Style="{StaticResource BotonPrimario}"
                             Margin="0,12,0,16"
                             Clicked="OnCapturarClicked" />
                 </VerticalStackLayout>
             </Grid>
+        </Grid>
+
+        <!-- Panel que entra desde la derecha al abrir el mapa -->
+        <Grid x:Name="grdPanelMapa"
+              IsVisible="False"
+              SafeAreaEdges="Container">
+            <views:vPanelMapa x:Name="pnlMapa" />
         </Grid>
 
         <!-- Capa 2: menú de la cuenta -->

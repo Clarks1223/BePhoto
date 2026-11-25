@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrontEnd.Views.vDetalle"
+             Title=""
+             Style="{StaticResource PaginaAuth}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,8,24,32"
+                             Spacing="0"
+                             MaximumWidthRequest="440">
+
+            <Label Text="Detalles de la foto"
+                   Style="{StaticResource Titulo}"
+                   SemanticProperties.HeadingLevel="Level1"
+                   Margin="0,0,0,32" />
+
+            <Label Text="Detalle"
+                   Style="{StaticResource EtiquetaCampo}" />
+            <Border Style="{StaticResource CampoContenedor}"
+                    HeightRequest="-1"
+                    MinimumHeightRequest="120"
+                    Padding="16,10">
+                <Editor x:Name="txtDetalle"
+                        TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                        PlaceholderColor="{AppThemeBinding Light={StaticResource PlaceholderClaro}, Dark={StaticResource PlaceholderOscuro}}"
+                        BackgroundColor="Transparent"
+                        FontSize="16"
+                        AutoSize="TextChanges"
+                        MaxLength="300"
+                        Placeholder="Cuenta algo de este recuerdo"
+                        SemanticProperties.Description="Detalle de la foto" />
+            </Border>
+
+            <!-- Datos de la captura (solo lectura) -->
+            <VerticalStackLayout Margin="2,24,0,0"
+                                 Spacing="14">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Fecha"
+                           Style="{StaticResource EtiquetaDato}" />
+                    <Label x:Name="lblFecha"
+                           Style="{StaticResource ValorDato}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Coordenadas"
+                           Style="{StaticResource EtiquetaDato}" />
+                    <Label x:Name="lblCoordenadas"
+                           Style="{StaticResource ValorDato}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout x:Name="stkPrecision"
+                                     Spacing="2">
+                    <Label Text="Precisión"
+                           Style="{StaticResource EtiquetaDato}" />
+                    <Label x:Name="lblPrecision"
+                           Style="{StaticResource ValorDato}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <Label x:Name="lblMensaje"
+                   Style="{StaticResource MensajeError}"
+                   Margin="2,20,0,0" />
+
+            <Button x:Name="btnGuardar"
+                    Text="Guardar cambios"
+                    Style="{StaticResource BotonPrimario}"
+                    Margin="0,28,0,0"
+                    Clicked="OnGuardarClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

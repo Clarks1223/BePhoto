@@ -1,50 +1,162 @@
+using System.Collections.ObjectModel;
+using FrontEnd.Models;
+using FrontEnd.Repositories;
+using FrontEnd.Utils;
+
 namespace FrontEnd.Views
 {
     public partial class vInicio : ContentPage
     {
         private const double OpacidadVelo = 0.4;
+        private const uint DuracionMapa = 300;
+        private const double DistanciaAbrirMapa = 80;
+        private static readonly TimeSpan EsperaUbicacion = TimeSpan.FromSeconds(30);
         private const uint DuracionMenu = 200;
         private const double DesplazamientoMenu = -16;
 
-        private readonly List<RecuerdoDemo> _recuerdos = new()
-        {
-            new("Atardecer en la costa", "18 nov 2026", "recuerdo_costa.svg",
-                "Una tarde tranquila frente al mar.", "19.4326, -99.1332"),
-            new("Mirador de montaña", "02 nov 2026", "recuerdo_montana.svg",
-                "Un camino entre montañas y un paisaje inolvidable.", "19.4326, -99.1332"),
-            new("Centro histórico", "20 oct 2026", "recuerdo_ciudad.svg",
-                "Un paseo por las calles del centro.", "19.4326, -99.1332")
-        };
+        private IReadOnlyList<Recuerdo> _recuerdos = RecuerdoRepository.ObtenerTodos();
+        private ObservableCollection<Recuerdo> _visibles = [];
 
         private bool _menuAbierto;
+        private bool _atendiendoFoto;
+        private bool _capturando;
+        private bool _arrastrandoMapa;
+        private bool _abriendoMapa;
+        private bool _mapaAbierto;
+        private double _distanciaArrastre;
 
         public vInicio()
         {
             InitializeComponent();
-            cvRecuerdos.ItemsSource = _recuerdos;
-            ActualizarConteo(_recuerdos.Count);
+            MostrarRecuerdos();
         }
 
-        private void OnBusquedaTextoCambiado(object? sender, TextChangedEventArgs e)
+        protected override async void OnAppearing()
         {
-            string busqueda = e.NewTextValue?.Trim() ?? string.Empty;
-            List<RecuerdoDemo> filtrados = string.IsNullOrEmpty(busqueda)
+            base.OnAppearing();
+            SoltarDeslizamiento();
+            QuitarEliminados();
+            DeslizamientoMapa.Movido += OnDeslizamientoMovido;
+            DeslizamientoMapa.Terminado += OnDeslizamientoTerminado;
+
+            // Al volver del mapa, el panel sale por donde entró.
+            if (_mapaAbierto)
+            {
+                _mapaAbierto = false;
+                await OcultarPanelMapa();
+                _abriendoMapa = false;
+            }
+        }
+
+        protected override void OnDisappearing()
+        {
+            SoltarDeslizamiento();
+            base.OnDisappearing();
+        }
+
+        private void SoltarDeslizamiento()
+        {
+            DeslizamientoMapa.Movido -= OnDeslizamientoMovido;
+            DeslizamientoMapa.Terminado -= OnDeslizamientoTerminado;
+        }
+
+        // El panel del mapa sigue al dedo desde el borde derecho.
+        private void OnDeslizamientoMovido(double distancia)
+        {
+            if (_menuAbierto || _abriendoMapa || _capturando || _atendiendoFoto)
+                return;
+
+            if (!_arrastrandoMapa)
+            {
+                _arrastrandoMapa = true;
+                MostrarPanelMapa();
+            }
+            _distanciaArrastre = distancia;
+            pnlMapa.TranslationX = Math.Clamp(Width - distancia, 0, Width);
+        }
+
+        private async void OnDeslizamientoTerminado(bool completo)
+        {
+            if (!_arrastrandoMapa)
+                return;
+            _arrastrandoMapa = false;
+
+            if (completo && _distanciaArrastre >= DistanciaAbrirMapa)
+                await AbrirMapa();
+            else
+                await OcultarPanelMapa();
+        }
+
+        private async void OnMapaTapped(object? sender, TappedEventArgs e)
+        {
+            if (_abriendoMapa || _arrastrandoMapa || _capturando)
+                return;
+            MostrarPanelMapa();
+            await AbrirMapa();
+        }
+
+        private void MostrarPanelMapa()
+        {
+            txtBusqueda.Unfocus();
+            pnlMapa.CancelAnimations();
+            pnlMapa.TranslationX = Width;
+            grdPanelMapa.IsVisible = true;
+        }
+
+        // Termina de entrar el panel y deja vMapa en su lugar, sin otra animación.
+        private async Task AbrirMapa()
+        {
+            _abriendoMapa = true;
+            await pnlMapa.TranslateToAsync(0, 0, DuracionMapa, Easing.CubicOut);
+            _mapaAbierto = true;
+            await Navigation.PushAsync(new vMapa(), animated: false);
+        }
+
+        private async Task OcultarPanelMapa()
+        {
+            bool interrumpida = await pnlMapa.TranslateToAsync(Width, 0, DuracionMapa, Easing.CubicOut);
+            if (!interrumpida)
+                grdPanelMapa.IsVisible = false;
+        }
+
+        private void OnBusquedaTextoCambiado(object? sender, TextChangedEventArgs e) => MostrarRecuerdos();
+
+        private void MostrarRecuerdos()
+        {
+            string busqueda = txtBusqueda.Text?.Trim() ?? string.Empty;
+            IReadOnlyList<Recuerdo> filtrados = string.IsNullOrEmpty(busqueda)
                 ? _recuerdos
                 : _recuerdos.Where(recuerdo =>
-                    recuerdo.Titulo.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                    recuerdo.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
                     recuerdo.FechaTexto.Contains(busqueda, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            cvRecuerdos.ItemsSource = filtrados;
-            cvRecuerdos.IsVisible = filtrados.Count > 0;
-            stkEstadoVacio.IsVisible = filtrados.Count == 0;
-            ActualizarConteo(filtrados.Count);
+            _visibles = new ObservableCollection<Recuerdo>(filtrados);
+            cvRecuerdos.ItemsSource = _visibles;
+            ActualizarEstado();
+        }
 
-            if (filtrados.Count == 0 && !string.IsNullOrEmpty(busqueda))
+        // Quita solo las fotos eliminadas, para no perder el lugar en la lista.
+        private void QuitarEliminados()
+        {
+            _recuerdos = RecuerdoRepository.ObtenerTodos();
+            foreach (Recuerdo eliminado in _visibles.Except(_recuerdos).ToList())
+                _visibles.Remove(eliminado);
+            ActualizarEstado();
+        }
+
+        private void ActualizarEstado()
+        {
+            string busqueda = txtBusqueda.Text?.Trim() ?? string.Empty;
+            cvRecuerdos.IsVisible = _visibles.Count > 0;
+            stkEstadoVacio.IsVisible = _visibles.Count == 0;
+            ActualizarConteo(_visibles.Count);
+
+            if (_visibles.Count == 0 && !string.IsNullOrEmpty(busqueda))
             {
                 lblEstadoVacio.Text = "No encontramos recuerdos con esa búsqueda";
                 btnEstadoVacio.Text = "Limpiar búsqueda";
             }
-            else if (filtrados.Count == 0)
+            else if (_visibles.Count == 0)
             {
                 lblEstadoVacio.Text = "Aún no tienes recuerdos guardados";
                 btnEstadoVacio.Text = "Capturar recuerdo";
@@ -56,16 +168,43 @@ namespace FrontEnd.Views
             lblConteo.Text = cantidad == 1 ? "1 recuerdo" : $"{cantidad} recuerdos";
         }
 
-        private async void OnRecuerdoSeleccionado(object? sender, SelectionChangedEventArgs e)
+        private async void OnRecuerdoTocado(object? sender, EventArgs e)
         {
-            if (e.CurrentSelection.FirstOrDefault() is not RecuerdoDemo recuerdo)
+            if (!PuedeAtenderFoto || (sender as View)?.BindingContext is not Recuerdo recuerdo)
                 return;
+            _atendiendoFoto = true;
 
-            cvRecuerdos.SelectedItem = null;
-            await DisplayAlertAsync(recuerdo.Titulo,
-                $"{recuerdo.Descripcion}\n\nFecha: {recuerdo.FechaTexto}\nCoordenadas: {recuerdo.Coordenadas}",
-                "Cerrar");
+            try
+            {
+                txtBusqueda.Unfocus();
+                await Navigation.PushAsync(new vVisor(_visibles, recuerdo));
+            }
+            finally
+            {
+                _atendiendoFoto = false;
+            }
         }
+
+        private async void OnRecuerdoMantenido(object? sender, EventArgs e)
+        {
+            if (!PuedeAtenderFoto || (sender as View)?.BindingContext is not Recuerdo recuerdo)
+                return;
+            _atendiendoFoto = true;
+
+            try
+            {
+                txtBusqueda.Unfocus();
+                if (await AccionesRecuerdo.MostrarMenu(this, recuerdo))
+                    QuitarEliminados();
+            }
+            finally
+            {
+                _atendiendoFoto = false;
+            }
+        }
+
+        private bool PuedeAtenderFoto =>
+            !_atendiendoFoto && !_menuAbierto && !_capturando && !_abriendoMapa && !_arrastrandoMapa;
 
         private void OnAccionEstadoVacioClicked(object? sender, EventArgs e)
         {
@@ -80,17 +219,115 @@ namespace FrontEnd.Views
 
         private async void OnCapturarClicked(object? sender, EventArgs e)
         {
-            await DisplayAlertAsync("Capturar recuerdo",
-                "La captura con la cámara se conectará en una siguiente etapa.",
-                "Entendido");
+            if (_capturando)
+                return;
+            _capturando = true;
+            txtBusqueda.Unfocus();
+            btnCapturar.IsEnabled = false;
+            btnEstadoVacio.IsEnabled = false;
+            string textoOriginal = btnCapturar.Text;
+
+            try
+            {
+                await CapturarRecuerdo();
+            }
+            catch (PermissionException)
+            {
+                await OfrecerAjustes("BePhoto necesita permiso para usar la cámara y guardar la foto.");
+            }
+            catch (FeatureNotSupportedException)
+            {
+                await DisplayAlertAsync("Cámara no disponible",
+                    "No encontramos una cámara en este teléfono.", "Entendido");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                await DisplayAlertAsync("No se pudo guardar",
+                    "Ocurrió un problema al capturar el recuerdo. Inténtalo de nuevo.", "Entendido");
+            }
+            finally
+            {
+                btnCapturar.Text = textoOriginal;
+                btnCapturar.IsEnabled = true;
+                btnEstadoVacio.IsEnabled = true;
+                _capturando = false;
+            }
         }
 
-        private sealed record RecuerdoDemo(
-            string Titulo,
-            string FechaTexto,
-            string Foto,
-            string Descripcion,
-            string Coordenadas);
+        private async Task CapturarRecuerdo()
+        {
+            // Los permisos se piden antes, para no perder una foto ya tomada.
+            if (await Permissions.RequestAsync<Permissions.Camera>() != PermissionStatus.Granted)
+            {
+                await OfrecerAjustes("BePhoto necesita la cámara para tomar la foto.");
+                return;
+            }
+
+            // Restricted: en Android 12+ el usuario solo dio la ubicación aproximada.
+            PermissionStatus permiso = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            if (permiso != PermissionStatus.Granted)
+            {
+                await OfrecerAjustes(permiso == PermissionStatus.Restricted
+                    ? "Activa la ubicación precisa para guardar el lugar exacto de la foto."
+                    : "BePhoto necesita tu ubicación para guardar el lugar de la foto.");
+                return;
+            }
+
+            FileResult? foto = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions
+            {
+                RotateImage = true
+            });
+            if (foto is null)
+                return;
+
+            DateTime fecha = DateTime.Now;
+            btnCapturar.Text = "Obteniendo ubicación…";
+            Location? ubicacion = await ObtenerUbicacion();
+            if (ubicacion is null)
+                return;
+
+            btnCapturar.Text = "Guardando…";
+            Recuerdo recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha);
+
+            _recuerdos = RecuerdoRepository.ObtenerTodos();
+            if (string.IsNullOrEmpty(txtBusqueda.Text))
+                MostrarRecuerdos();
+            else
+                txtBusqueda.Text = string.Empty;
+
+            await DisplayAlertAsync("Recuerdo guardado", AccionesRecuerdo.DetalleUbicacion(recuerdo), "Entendido");
+        }
+
+        // Insiste hasta tener una lectura del GPS o hasta que el usuario descarte la foto.
+        private async Task<Location?> ObtenerUbicacion()
+        {
+            while (true)
+            {
+                string problema;
+                try
+                {
+                    Location? ubicacion = await Geolocation.Default.GetLocationAsync(
+                        new GeolocationRequest(GeolocationAccuracy.Best, EsperaUbicacion));
+                    if (ubicacion is not null)
+                        return ubicacion;
+                    problema = "No recibimos señal del GPS. Prueba en un lugar más abierto.";
+                }
+                catch (FeatureNotEnabledException)
+                {
+                    problema = "La ubicación del teléfono está apagada. Actívala y vuelve a intentarlo.";
+                }
+
+                if (!await DisplayAlertAsync("Sin ubicación", problema, "Reintentar", "Descartar foto"))
+                    return null;
+            }
+        }
+
+        private async Task OfrecerAjustes(string mensaje)
+        {
+            if (await DisplayAlertAsync("Permiso necesario", mensaje, "Abrir ajustes", "Ahora no"))
+                AppInfo.Current.ShowSettingsUI();
+        }
 
         private async void OnAvatarTapped(object? sender, TappedEventArgs e)
         {
@@ -122,13 +359,15 @@ namespace FrontEnd.Views
                 _ = CerrarMenu();
                 return true;
             }
+            // MAUI falla si la actividad se cierra con el campo enfocado.
+            txtBusqueda.Unfocus();
             return base.OnBackButtonPressed();
         }
 
         // La tarjeta baja un poco mientras aparece y el velo se oscurece al mismo ritmo.
         private async Task AbrirMenu()
         {
-            if (_menuAbierto)
+            if (_menuAbierto || _capturando)
                 return;
             _menuAbierto = true;
 

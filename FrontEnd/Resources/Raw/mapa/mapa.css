@@ -1,0 +1,26 @@
+html, body, #mapa { height: 100%; margin: 0; }
+body { background: #F4F4F6; }
+#mapa { background: #F4F4F6; font-family: sans-serif; }
+
+.oscuro, .oscuro #mapa { background: #1B1B20; }
+.oscuro .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }
+.oscuro .leaflet-control-attribution { background: rgba(15, 15, 18, 0.85); color: #A3A5AD; }
+.oscuro .leaflet-control-attribution a { color: #A39BFF; }
+
+/* El ícono mide 0x0: su origen es la coordenada exacta. */
+#mapa .marcador svg { z-index: 0; position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.marcador line { stroke: #5B4BFF; stroke-width: 2; }
+.marcador circle { fill: #5B4BFF; stroke: #FFFFFF; stroke-width: 2; }
+#mapa .marcador img {
+    position: absolute;
+    box-sizing: border-box;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    z-index: 1;
+    border: 3px solid #FFFFFF;
+    border-radius: 14px;
+    background: #E2E3E8;
+}
+.oscuro #mapa .marcador img { border-color: #0F0F12; }
+#mapa .marcador img.elegido, .oscuro #mapa .marcador img.elegido { border-color: #5B4BFF; }
