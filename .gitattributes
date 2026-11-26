@@ -61,3 +61,6 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Los scripts de shell siempre con saltos de línea LF, también en Windows.
+*.sh text eol=lf

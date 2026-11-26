@@ -1,3 +1,4 @@
+using FrontEnd.Services;
 using FrontEnd.Utils;
 
 namespace FrontEnd.Views
@@ -43,10 +44,29 @@ namespace FrontEnd.Views
             if (!Formulario.Validar([.. campos]))
                 return;
 
-            // TODO: enviar los campos al backend (incluida la
-            // contraseña actual cuando _requiereContrasenaActual es true).
-            if (!await Conexion.Ejecutar(this, btnCambiarContrasena, _ => Task.CompletedTask))
+            // Dentro de la app se envía al backend (la contraseña actual incorrecta la explica el
+            // servidor). TODO: la recuperación desde el login aún no tiene endpoint en el backend.
+            string? problema = null;
+            if (!await Conexion.Ejecutar(this, btnCambiarContrasena, async t =>
+                {
+                    if (!_requiereContrasenaActual)
+                        return;
+                    try
+                    {
+                        await Api.CambiarContrasenaAsync(txtContrasenaActual.Text, txtNuevaContrasena.Text, t);
+                    }
+                    catch (ApiException ex)
+                    {
+                        problema = ex.Message;
+                    }
+                }))
                 return;
+
+            if (problema is not null)
+            {
+                await DisplayAlertAsync("No se pudo cambiar la contraseña", problema, "Entendido");
+                return;
+            }
 
             if (_requiereContrasenaActual)
                 await Navigation.PopAsync();       // vuelve a la app

@@ -72,7 +72,7 @@ namespace FrontEnd.Views
             btnGuardar.IsEnabled = false;
 
             if (await Conexion.Ejecutar(this,
-                    _ => RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text)))
+                    t => RecuerdoRepository.EditarDetalleAsync(_recuerdo, txtDetalle.Text, t)))
             {
                 await Navigation.PopAsync();
                 return;

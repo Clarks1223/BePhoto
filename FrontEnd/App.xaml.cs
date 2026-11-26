@@ -1,4 +1,6 @@
-﻿namespace FrontEnd
+﻿using FrontEnd.Services;
+
+namespace FrontEnd
 {
     public partial class App : Application
     {
@@ -9,9 +11,8 @@
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            // TODO: cuando exista el backend, abrir con sesionIniciada: true si
-            // hay una sesión guardada.
-            return new Window(new AppShell());
+            // Si quedó una sesión guardada, se abre directo en la galería.
+            return new Window(new AppShell(Api.HaySesion));
         }
 
         // Cambia toda la app al login (false) o a la pantalla de inicio (true).

@@ -1,13 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FrontEnd.Models;
+using FrontEnd.Services;
 
 namespace FrontEnd.Repositories
 {
-    // Recuerdos que comparten la galería y el mapa: los capturados en este teléfono
-    // (fotos y recuerdos.json en la carpeta privada de la app) y los de ejemplo.
-    // TODO: cuando exista el backend, subir la foto a Cloudinary y guardar en la base de
-    // datos solo su URL (Recuerdo.Foto). La app no debe llevar las llaves de Cloudinary.
+    // Recuerdos que comparten la galería y el mapa: los del usuario y los de ejemplo.
+    // La verdad está en el servidor (BackEnd): la foto se sube a Cloudinary desde la API y
+    // aquí solo se guarda su URL. recuerdos.json (carpeta privada de la app) es una copia
+    // para que la galería abra al instante y sirva sin conexión. La app no lleva las llaves
+    // de Cloudinary.
     public static class RecuerdoRepository
     {
         private static readonly IReadOnlyList<Recuerdo> Ejemplos = new List<Recuerdo>
@@ -29,46 +31,107 @@ namespace FrontEnd.Repositories
 
         private static readonly List<Recuerdo> Capturados = Cargar();
 
+        // true cuando la copia del teléfono ya se igualó con el servidor en esta sesión.
+        public static bool Sincronizado { get; private set; }
+
         // Los más recientes primero.
         public static IReadOnlyList<Recuerdo> ObtenerTodos() =>
             [.. Capturados.Concat(EjemplosVigentes()).OrderByDescending(recuerdo => recuerdo.Fecha)];
 
-        public static async Task<Recuerdo> GuardarAsync(FileResult foto, Location ubicacion, DateTime fecha)
+        // Sube la foto al servidor y guarda el recuerdo. Si algo falla no queda nada a medias,
+        // así que Conexion puede reintentar sin duplicar.
+        public static async Task<Recuerdo> GuardarAsync(
+            FileResult foto, Location ubicacion, DateTime fecha, CancellationToken ct = default)
         {
-            Directory.CreateDirectory(Carpeta);
-            string nombre = SiguienteNombre();
-            string rutaFoto = Path.Combine(Carpeta, $"{nombre}.jpg");
+            // El número solo avanza cuando la foto ya se guardó: un reintento usa el mismo.
+            int numero = Preferences.Default.Get(ClaveUltimoNumero, Ejemplos.Count) + 1;
+            string nombre = $"foto_{numero:0000}";
+
+            RecuerdoApi creado = await Api.CrearRecuerdoAsync(
+                foto, nombre, ubicacion.Latitude, ubicacion.Longitude, ubicacion.Altitude, fecha, ct);
+            Preferences.Default.Set(ClaveUltimoNumero, numero);
+
+            // El servidor no guarda la precisión del GPS: se conserva solo en este teléfono.
+            Recuerdo recuerdo = Mapear(creado) with { PrecisionMetros = ubicacion.Accuracy };
+
+            Capturados.Insert(0, recuerdo);
+            await GuardarCopiaAsync();
+            return recuerdo;
+        }
+
+        // Trae los recuerdos del usuario desde el servidor y reemplaza la copia del teléfono.
+        // Los que solo existen aquí (Id nulo, de antes de conectar el backend) se conservan.
+        public static async Task SincronizarAsync(CancellationToken ct = default)
+        {
+            List<RecuerdoApi> remotos = await Api.ListarRecuerdosAsync(ct);
+
+            Dictionary<string, double?> precisiones = Capturados
+                .Where(recuerdo => recuerdo.Id is not null)
+                .ToDictionary(recuerdo => recuerdo.Id!, recuerdo => recuerdo.PrecisionMetros);
+            List<Recuerdo> soloLocales = Capturados.Where(recuerdo => recuerdo.Id is null).ToList();
+
+            Capturados.Clear();
+            Capturados.AddRange(remotos.Select(remoto =>
+            {
+                Recuerdo recuerdo = Mapear(remoto);
+                return precisiones.TryGetValue(recuerdo.Id!, out double? precision)
+                    ? recuerdo with { PrecisionMetros = precision }
+                    : recuerdo;
+            }));
+            Capturados.AddRange(soloLocales);
+
+            Sincronizado = true;
+            await GuardarCopiaAsync();
+        }
+
+        // Al cerrar sesión o cambiar de cuenta no deben quedar los recuerdos del usuario anterior.
+        public static void LimpiarSesion()
+        {
+            Sincronizado = false;
+            if (Capturados.RemoveAll(recuerdo => recuerdo.Id is not null) == 0)
+                return;
 
             try
             {
-                using (Stream origen = await foto.OpenReadAsync())
-                using (FileStream destino = File.Create(rutaFoto))
-                    await origen.CopyToAsync(destino);
-
-                var recuerdo = new Recuerdo(
-                    nombre,
-                    fecha,
-                    rutaFoto,
-                    string.Empty,
-                    ubicacion.Latitude,
-                    ubicacion.Longitude,
-                    ubicacion.Accuracy);
-
-                List<Recuerdo> nuevos = [recuerdo, .. Capturados];
-
-                await EscribirAsync(nuevos);
-
-                Capturados.Insert(0, recuerdo);
-                return recuerdo;
+                File.WriteAllText(Archivo,
+                    JsonSerializer.Serialize(Capturados, RecuerdoJson.Default.ListRecuerdo));
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                File.Delete(rutaFoto);
-                throw;
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 
-        public static async Task EditarDetalleAsync(Recuerdo recuerdo, string detalle)
+        // La foto de Cloudinary viene a su tamaño original; q_auto y w_1600 la aligeran
+        // sin cambiar su formato, que es lo que la galería y el mapa necesitan.
+        private static Recuerdo Mapear(RecuerdoApi remoto) => new(
+            remoto.Titulo,
+            remoto.Fecha.Kind == DateTimeKind.Local
+                ? remoto.Fecha
+                : DateTime.SpecifyKind(remoto.Fecha, DateTimeKind.Utc).ToLocalTime(),
+            remoto.FotoUrl.Replace("/upload/", "/upload/q_auto,w_1600/"),
+            remoto.Descripcion,
+            remoto.Latitud,
+            remoto.Longitud,
+            Id: remoto.Id.ToString());
+
+        // La copia del teléfono es solo comodidad: si no se puede escribir, el recuerdo
+        // ya está a salvo en el servidor y no hay que repetir la operación.
+        private static async Task GuardarCopiaAsync()
+        {
+            try
+            {
+                Directory.CreateDirectory(Carpeta);
+                await EscribirAsync(Capturados);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+        }
+
+        public static async Task EditarDetalleAsync(
+            Recuerdo recuerdo, string detalle, CancellationToken ct = default)
         {
             if (!Capturados.Contains(recuerdo))
             {
@@ -77,18 +140,13 @@ namespace FrontEnd.Repositories
                 return;
             }
 
+            // Primero el servidor; si falla, el recuerdo queda como estaba.
+            if (recuerdo.Id is not null)
+                await Api.ActualizarRecuerdoAsync(recuerdo.Id, recuerdo.Nombre, detalle, ct);
+
             // Las pantallas comparten el mismo objeto, así que todas ven el cambio.
-            string anterior = recuerdo.Descripcion;
             recuerdo.Descripcion = detalle;
-            try
-            {
-                await EscribirAsync(Capturados);
-            }
-            catch
-            {
-                recuerdo.Descripcion = anterior;
-                throw;
-            }
+            await GuardarCopiaAsync();
         }
 
         // El número avanza siempre: el de una foto eliminada no se vuelve a usar.
@@ -99,8 +157,8 @@ namespace FrontEnd.Repositories
             return $"foto_{numero:0000}";
         }
 
-        // TODO: eliminarla también de Cloudinary y del backend cuando existan.
-        public static async Task EliminarAsync(Recuerdo recuerdo)
+        // El servidor borra el recuerdo y también su foto de Cloudinary.
+        public static async Task EliminarAsync(Recuerdo recuerdo, CancellationToken ct = default)
         {
             if (!Capturados.Contains(recuerdo))
             {
@@ -110,8 +168,15 @@ namespace FrontEnd.Repositories
                 return;
             }
 
-            await EscribirAsync(Capturados.Where(otro => otro != recuerdo).ToList());
+            if (recuerdo.Id is not null)
+                await Api.EliminarRecuerdoAsync(recuerdo.Id, ct);
+
             Capturados.Remove(recuerdo);
+            await GuardarCopiaAsync();
+
+            // Solo las fotos locales (de antes del backend) tienen archivo en el teléfono.
+            if (recuerdo.Foto.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                return;
 
             try
             {

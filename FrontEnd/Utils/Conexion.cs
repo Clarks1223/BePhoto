@@ -1,4 +1,5 @@
 using System.Net;
+using FrontEnd.Services;
 
 namespace FrontEnd.Utils
 {
@@ -44,15 +45,17 @@ namespace FrontEnd.Utils
         }
 
         // Para acciones sin botón propio, o cuya pantalla ya controla el suyo.
+        // "espera" permite más tiempo a operaciones pesadas, como subir una foto.
         public static async Task<bool> Ejecutar(
-            Page pagina, Func<CancellationToken, Task> operacion, string cancelar = "Cancelar")
+            Page pagina, Func<CancellationToken, Task> operacion, string cancelar = "Cancelar",
+            TimeSpan? espera = null)
         {
             while (true)
             {
                 if (!await Comprobar(pagina, cancelar))
                     return false;
 
-                (string Titulo, string Texto)? problema = await Intentar(operacion);
+                (string Titulo, string Texto)? problema = await Intentar(operacion, espera ?? Espera);
 
                 // El usuario pudo salir de la página mientras esperaba.
                 if (!EstaVisible(pagina))
@@ -65,9 +68,10 @@ namespace FrontEnd.Utils
         }
 
         // Devuelve null si todo salió bien.
-        private static async Task<(string, string)?> Intentar(Func<CancellationToken, Task> operacion)
+        private static async Task<(string, string)?> Intentar(
+            Func<CancellationToken, Task> operacion, TimeSpan espera)
         {
-            using var limite = new CancellationTokenSource(Espera);
+            using var limite = new CancellationTokenSource(espera);
             try
             {
                 await operacion(limite.Token);
@@ -77,6 +81,11 @@ namespace FrontEnd.Utils
             {
                 System.Diagnostics.Debug.WriteLine(ex);
                 return ("El servidor tarda en responder", "Tu conexión puede estar lenta. Inténtalo de nuevo.");
+            }
+            catch (ApiException ex)
+            {
+                // El servidor explicó el problema (foto muy pesada, datos no válidos...).
+                return ("No se pudo completar la acción", ex.Message);
             }
             catch (Exception ex) when (ex is HttpRequestException { StatusCode: null or >= HttpStatusCode.InternalServerError } or HttpIOException)
             {

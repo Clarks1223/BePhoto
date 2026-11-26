@@ -1,3 +1,4 @@
+using FrontEnd.Services;
 using FrontEnd.Utils;
 
 namespace FrontEnd.Views
@@ -26,10 +27,27 @@ namespace FrontEnd.Views
                     (txtContrasena, Reglas.Obligatorio("Escribe tu contraseña."))))
                 return;
 
-            // TODO: enviar txtCorreo y txtContrasena al backend y entrar solo si
-            // las credenciales son correctas. Por ahora entra directamente.
-            if (!await Conexion.Ejecutar(this, btnIniciarSesion, async t => { using var h = new HttpClient(); await h.GetAsync(txtContrasena.Text == "apagado" ? "https://10.0.2.2:5999/" : "https://10.0.2.2:5998/", t); }))
+            // Las credenciales incorrectas las explica el servidor (401): se muestran aquí
+            // en vez de ofrecer "reintentar", que no arreglaría nada.
+            string? problema = null;
+            if (!await Conexion.Ejecutar(this, btnIniciarSesion, async t =>
+                {
+                    try
+                    {
+                        await Api.IniciarSesionAsync(txtCorreo.Text, txtContrasena.Text, t);
+                    }
+                    catch (ApiException ex)
+                    {
+                        problema = ex.Message;
+                    }
+                }))
                 return;
+
+            if (problema is not null)
+            {
+                await DisplayAlertAsync("No se pudo iniciar sesión", problema, "Entendido");
+                return;
+            }
 
             App.CambiarRaiz(sesionIniciada: true);
         }
