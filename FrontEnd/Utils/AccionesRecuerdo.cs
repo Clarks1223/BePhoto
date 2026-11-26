@@ -32,7 +32,7 @@ namespace FrontEnd.Utils
                     Eliminar, Cancelar))
                 return false;
 
-            return await Conexion.Ejecutar(pagina, _ => RecuerdoRepository.EliminarAsync(recuerdo));
+            return await Conexion.Ejecutar(pagina, t => RecuerdoRepository.EliminarAsync(recuerdo, t));
         }
 
         public static string DetalleUbicacion(Recuerdo recuerdo) =>

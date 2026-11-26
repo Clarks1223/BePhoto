@@ -7,13 +7,15 @@ namespace FrontEnd.Models
         // Secuencial (foto_0001) e interno: no se muestra ni se edita.
         string Nombre,
         DateTime Fecha,
-        // Hoy es una ruta local; con el backend será la URL de Cloudinary.
+        // URL de Cloudinary (o una ruta local si es un ejemplo de la app).
         string Foto,
         string Descripcion,
         double Latitud,
         double Longitud,
         // Margen de error del GPS en metros; null si no se conoce.
-        double? PrecisionMetros = null)
+        double? PrecisionMetros = null,
+        // Id del recuerdo en el servidor; null si solo existe en este teléfono (los ejemplos).
+        string? Id = null)
     {
         // Abreviaturas fijas para que la fecha se vea igual en todos los dispositivos.
         private static readonly string[] Meses =

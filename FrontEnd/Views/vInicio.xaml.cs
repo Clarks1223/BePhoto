@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using FrontEnd.Models;
 using FrontEnd.Repositories;
+using FrontEnd.Services;
 using FrontEnd.Utils;
 
 namespace FrontEnd.Views
@@ -26,6 +27,7 @@ namespace FrontEnd.Views
         private bool _mapaAbierto;
         private double _distanciaArrastre;
         private int _turnoAviso;
+        private bool _sincronizando;
 
         public vInicio()
         {
@@ -41,12 +43,37 @@ namespace FrontEnd.Views
             DeslizamientoMapa.Movido += OnDeslizamientoMovido;
             DeslizamientoMapa.Terminado += OnDeslizamientoTerminado;
 
+            // Los recuerdos del servidor se traen al entrar; sin conexión se muestra lo guardado.
+            if (!RecuerdoRepository.Sincronizado && !_sincronizando)
+                _ = SincronizarRecuerdos();
+
             // Al volver del mapa, el panel sale por donde entró.
             if (_mapaAbierto)
             {
                 _mapaAbierto = false;
                 await OcultarPanelMapa();
                 _abriendoMapa = false;
+            }
+        }
+
+        private async Task SincronizarRecuerdos()
+        {
+            _sincronizando = true;
+            try
+            {
+                using var limite = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await RecuerdoRepository.SincronizarAsync(limite.Token);
+                _recuerdos = RecuerdoRepository.ObtenerTodos();
+                MostrarRecuerdos();
+            }
+            catch (Exception ex)
+            {
+                // Sin conexión no es un error para el usuario: se reintenta la próxima vez.
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            finally
+            {
+                _sincronizando = false;
             }
         }
 
@@ -295,9 +322,10 @@ namespace FrontEnd.Views
 
             btnCapturar.Text = "Guardando…";
             Recuerdo? recuerdo = null;
+            // Subir la foto tarda más que una consulta: se le da hasta 90 s.
             await Conexion.Ejecutar(this,
-                async _ => recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha),
-                "Descartar foto");
+                async t => recuerdo = await RecuerdoRepository.GuardarAsync(foto, ubicacion, fecha, t),
+                "Descartar foto", TimeSpan.FromSeconds(90));
             if (recuerdo is null)
                 return;
 
@@ -405,7 +433,7 @@ namespace FrontEnd.Views
 
         private void OnCerrarSesionTapped(object? sender, TappedEventArgs e)
         {
-            // TODO: borrar la sesión guardada cuando exista el backend.
+            Api.CerrarSesion();
             App.CambiarRaiz(sesionIniciada: false);
         }
 

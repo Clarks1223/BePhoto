@@ -1,0 +1,97 @@
+@host = http://localhost:5080
+
+### 0. ¿Está viva la API?
+GET {{host}}/
+
+### 1. Crear cuenta  (HU-BP-0001, escenario 3)
+POST {{host}}/api/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Erick",
+  "apellido": "Santillan",
+  "correo": "erick@correo.com",
+  "contrasena": "Clave12345"
+}
+
+### 2. Iniciar sesión  (devuelve el token)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "erick@correo.com",
+  "contrasena": "Clave12345"
+}
+
+### 2b. Credenciales incorrectas  (debe responder 401 "Correo o contraseña incorrectos")
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "erick@correo.com",
+  "contrasena": "otra-clave"
+}
+
+### 3. Mi perfil y resumen de actividad  (HU-BP-0008)
+GET {{host}}/api/perfil
+Authorization: Bearer {{login.response.body.$.token}}
+
+### 4. Crear un recuerdo con foto  (HU-BP-0002 / 0003)
+# Cambia la ruta de la foto (después del "<") por una imagen de tu PC.
+POST {{host}}/api/recuerdos
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: multipart/form-data; boundary=BePhotoLimite
+
+--BePhotoLimite
+Content-Disposition: form-data; name="titulo"
+
+Atardecer en la costa
+--BePhotoLimite
+Content-Disposition: form-data; name="descripcion"
+
+Una tarde tranquila frente al mar.
+--BePhotoLimite
+Content-Disposition: form-data; name="latitud"
+
+-0.18065
+--BePhotoLimite
+Content-Disposition: form-data; name="longitud"
+
+-78.46783
+--BePhotoLimite
+Content-Disposition: form-data; name="altitud"
+
+2800
+--BePhotoLimite
+Content-Disposition: form-data; name="fecha"
+
+2026-11-24T20:30:00-05:00
+--BePhotoLimite
+Content-Disposition: form-data; name="foto"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< C:\Users\Erick\Pictures\foto.jpg
+--BePhotoLimite--
+
+### 5. Galería  (HU-BP-0004)
+GET {{host}}/api/recuerdos
+Authorization: Bearer {{login.response.body.$.token}}
+
+### 6. Detalle  (pega aquí el "id" de un recuerdo)
+GET {{host}}/api/recuerdos/PEGA-AQUI-EL-ID
+Authorization: Bearer {{login.response.body.$.token}}
+
+### 7. Editar título y descripción  (HU-BP-0006)
+PUT {{host}}/api/recuerdos/PEGA-AQUI-EL-ID
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "titulo": "Atardecer en la playa",
+  "descripcion": "Texto corregido."
+}
+
+### 8. Eliminar  (HU-BP-0007)
+DELETE {{host}}/api/recuerdos/PEGA-AQUI-EL-ID
+Authorization: Bearer {{login.response.body.$.token}}
