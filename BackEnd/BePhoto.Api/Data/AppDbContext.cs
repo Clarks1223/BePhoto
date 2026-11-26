@@ -7,6 +7,7 @@ namespace BePhoto.Api.Data
     {
         public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<Recuerdo> Recuerdos => Set<Recuerdo>();
+        public DbSet<CodigoRestablecimiento> CodigosRestablecimiento => Set<CodigoRestablecimiento>();
 
         protected override void OnModelCreating(ModelBuilder modelo)
         {
@@ -20,6 +21,21 @@ namespace BePhoto.Api.Data
                 e.Property(u => u.ContrasenaHash).HasMaxLength(100).IsRequired();
                 // Un correo no se puede repetir (HU-BP-0001).
                 e.HasIndex(u => u.Correo).IsUnique();
+            });
+
+            // Si cambias esta tabla, cambia también EsquemaExtra.cs (crea la tabla en bases ya existentes).
+            modelo.Entity<CodigoRestablecimiento>(e =>
+            {
+                e.ToTable("codigos_restablecimiento");
+                e.HasKey(c => c.Id);
+                e.Property(c => c.CodigoHash).HasMaxLength(100).IsRequired();
+
+                e.HasOne(c => c.Usuario)
+                    .WithMany()
+                    .HasForeignKey(c => c.UsuarioId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasIndex(c => new { c.UsuarioId, c.FechaCreacion });
             });
 
             modelo.Entity<Recuerdo>(e =>

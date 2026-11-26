@@ -9,6 +9,21 @@ namespace BePhoto.Api.Configuracion
         public int DiasValidez { get; set; } = 30;
     }
 
+    public class ResendOpciones
+    {
+        // Clave de Resend (empieza con "re_"). Va en user-secrets o en la variable RESEND_API_KEY.
+        // Si falta, en desarrollo el código de recuperación se muestra en la consola de la API.
+        public string ApiKey { get; set; } = string.Empty;
+
+        // Sin dominio verificado, Resend solo deja enviar desde este remitente de pruebas.
+        public string Remitente { get; set; } = "BePhoto <onboarding@resend.dev>";
+
+        // Solo para pruebas: si tiene valor, todos los códigos se envían a este correo en vez de
+        // al del usuario. Hace falta mientras la cuenta de Resend no tenga un dominio verificado,
+        // porque entonces solo puede escribirle al dueño de la cuenta.
+        public string DestinoPruebas { get; set; } = string.Empty;
+    }
+
     public class CloudinaryOpciones
     {
         public string CloudName { get; set; } = string.Empty;

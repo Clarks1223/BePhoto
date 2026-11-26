@@ -73,6 +73,26 @@ namespace FrontEnd.Services
                 true, ct);
         }
 
+        // Recuperar la contraseña, paso 1: el servidor manda un código de 6 dígitos al correo.
+        // Responde igual exista o no la cuenta (para no revelar quién está registrado).
+        public static async Task OlvideContrasenaAsync(string correo, CancellationToken ct)
+        {
+            using HttpResponseMessage _ = await EnviarAsync(HttpMethod.Post, "api/auth/olvide-contrasena",
+                Json(new OlvideContrasenaPeticion(correo.Trim()), ApiJson.Default.OlvideContrasenaPeticion),
+                false, ct);
+        }
+
+        // Recuperar la contraseña, paso 2: el código del correo y la nueva contraseña.
+        // No inicia sesión: al terminar, la persona entra con su contraseña nueva.
+        public static async Task RestablecerContrasenaAsync(
+            string correo, string codigo, string nueva, CancellationToken ct)
+        {
+            using HttpResponseMessage _ = await EnviarAsync(HttpMethod.Post, "api/auth/restablecer-contrasena",
+                Json(new RestablecerContrasenaPeticion(correo.Trim(), codigo.Trim(), nueva),
+                    ApiJson.Default.RestablecerContrasenaPeticion),
+                false, ct);
+        }
+
         // Borra la sesión y los recuerdos del usuario guardados en el teléfono.
         public static void CerrarSesion()
         {
@@ -266,6 +286,10 @@ namespace FrontEnd.Services
 
     public sealed record ActualizarRecuerdoPeticion(string Titulo, string Descripcion);
 
+    public sealed record OlvideContrasenaPeticion(string Correo);
+
+    public sealed record RestablecerContrasenaPeticion(string Correo, string Codigo, string NuevaContrasena);
+
     public sealed record UsuarioApi(Guid Id, string Nombre, string Apellido, string Correo);
 
     public sealed record AuthRespuesta(string Token, DateTime Expira, UsuarioApi Usuario);
@@ -290,6 +314,8 @@ namespace FrontEnd.Services
     [JsonSerializable(typeof(RegistroPeticion))]
     [JsonSerializable(typeof(CambiarContrasenaPeticion))]
     [JsonSerializable(typeof(ActualizarRecuerdoPeticion))]
+    [JsonSerializable(typeof(OlvideContrasenaPeticion))]
+    [JsonSerializable(typeof(RestablecerContrasenaPeticion))]
     [JsonSerializable(typeof(AuthRespuesta))]
     [JsonSerializable(typeof(RecuerdoApi))]
     [JsonSerializable(typeof(List<RecuerdoApi>), TypeInfoPropertyName = "ListaRecuerdoApi")]

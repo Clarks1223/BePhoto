@@ -46,6 +46,30 @@ namespace BePhoto.Api.Dtos
         public string NuevaContrasena { get; set; } = string.Empty;
     }
 
+    // Paso 1 de recuperar la contraseña: se envía un código al correo.
+    public class OlvideContrasenaRequest
+    {
+        [Required(ErrorMessage = "Escribe tu correo.")]
+        [StringLength(100)]
+        public string Correo { get; set; } = string.Empty;
+    }
+
+    // Paso 2: el código recibido y la nueva contraseña.
+    public class RestablecerContrasenaRequest
+    {
+        [Required(ErrorMessage = "Escribe tu correo.")]
+        [StringLength(100)]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Escribe el código que te llegó al correo.")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "El código tiene 6 números.")]
+        public string Codigo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Escribe la nueva contraseña.")]
+        [StringLength(50, MinimumLength = 8, ErrorMessage = "La contraseña debe tener entre 8 y 50 caracteres.")]
+        public string NuevaContrasena { get; set; } = string.Empty;
+    }
+
     // ---------- Entrada: recuerdos ----------
 
     // Se envía como multipart/form-data porque lleva la foto.

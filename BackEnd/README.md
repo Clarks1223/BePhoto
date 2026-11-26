@@ -22,7 +22,24 @@ dotnet user-secrets set "Cloudinary:ApiKey" "TU_API_KEY"
 dotnet user-secrets set "Cloudinary:ApiSecret" "TU_API_SECRET"
 ```
 
-La base `bephoto` y sus tablas se crean solas al iniciar la API la primera vez.
+La base `bephoto` y sus tablas se crean solas al iniciar la API la primera vez. Las tablas que se agregan
+después (como la de los códigos de recuperación) también se crean solas al iniciar, sin borrar nada.
+
+### Correo de recuperación de contraseña (Resend)
+
+El código para recuperar la contraseña se envía por correo con [Resend](https://resend.com/docs/api-reference/emails/send-email).
+Es opcional para arrancar la API:
+
+```
+dotnet user-secrets set "Resend:ApiKey" "re_TU_CLAVE_DE_RESEND"
+dotnet user-secrets set "Resend:DestinoPruebas" "correo-del-dueno-de-la-cuenta@gmail.com"
+```
+
+- Sin `Resend:ApiKey`, en desarrollo el código se muestra en la consola de la API (para probar el flujo sin correo).
+- Sin un dominio verificado en Resend, solo se puede enviar al correo del **dueño de la cuenta** de Resend, y desde
+  `onboarding@resend.dev`. Con `Resend:DestinoPruebas` todos los códigos llegan a ese correo (el asunto dice para quién
+  eran), así se puede probar con cuentas de mentira. **Quítalo cuando haya un dominio verificado.**
+- También se puede dar la clave con la variable de entorno `RESEND_API_KEY`.
 
 ## Ejecutar
 
@@ -40,6 +57,8 @@ Todos devuelven JSON. Los marcados con 🔒 necesitan el encabezado `Authorizati
 | POST | `/api/auth/registro` | Crear cuenta. Devuelve el token. | HU-BP-0001 |
 | POST | `/api/auth/login` | Iniciar sesión. Devuelve el token. | HU-BP-0001 |
 | POST 🔒 | `/api/auth/cambiar-contrasena` | Cambiar la contraseña | |
+| POST | `/api/auth/olvide-contrasena` | Envía un código de 6 dígitos al correo (vale 15 min). Responde igual exista o no la cuenta. | |
+| POST | `/api/auth/restablecer-contrasena` | Cambia la contraseña con el código recibido (`correo`, `codigo`, `nuevaContrasena`). 5 intentos por código. | |
 | GET 🔒 | `/api/perfil` | Datos del usuario y cuántos recuerdos y lugares tiene | HU-BP-0008 |
 | GET 🔒 | `/api/recuerdos` | Galería, del más reciente al más antiguo | HU-BP-0004 |
 | GET 🔒 | `/api/recuerdos/{id}` | Detalle de un recuerdo | HU-BP-0005 |

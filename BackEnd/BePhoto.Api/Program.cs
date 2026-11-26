@@ -35,6 +35,15 @@ var cloudinary = new CloudinaryOpciones
     Carpeta = config["Cloudinary:Carpeta"] ?? "BePhoto"
 };
 
+// La clave de Resend es opcional: sin ella, en desarrollo el código se ve en la consola de la API.
+// También acepta la variable RESEND_API_KEY.
+var resend = new ResendOpciones
+{
+    ApiKey = config["Resend:ApiKey"] ?? config["RESEND_API_KEY"] ?? string.Empty,
+    Remitente = config["Resend:Remitente"] ?? "BePhoto <onboarding@resend.dev>",
+    DestinoPruebas = config["Resend:DestinoPruebas"] ?? string.Empty
+};
+
 string cadenaConexion = config.GetConnectionString("Default") ?? string.Empty;
 
 var faltantes = new List<string>();
@@ -53,12 +62,14 @@ if (faltantes.Count > 0)
 
 builder.Services.AddSingleton(jwt);
 builder.Services.AddSingleton(cloudinary);
+builder.Services.AddSingleton(resend);
 
 // ---------- Servicios ----------
 
 builder.Services.AddDbContext<AppDbContext>(opciones => opciones.UseNpgsql(cadenaConexion));
 builder.Services.AddSingleton<TokenServicio>();
 builder.Services.AddSingleton<IAlmacenFotos, CloudinaryAlmacenFotos>();
+builder.Services.AddHttpClient<ICorreoServicio, ResendCorreoServicio>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -112,6 +123,8 @@ using (IServiceScope alcance = app.Services.CreateScope())
 {
     AppDbContext db = alcance.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.EnsureCreatedAsync();
+    // Tablas añadidas después de crear la base (por ejemplo los códigos de recuperación).
+    await EsquemaExtra.AsegurarAsync(db);
 }
 
 // Las fotos subidas cuando la carpeta era el Id del usuario pasan a la carpeta de su correo.
