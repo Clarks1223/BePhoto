@@ -25,6 +25,12 @@ namespace FrontEnd.Utils
         public static Func<string, string?> Coincide(Func<string> contrasena) => valor =>
             valor != contrasena() ? "Las contraseñas no coinciden." : null;
 
+        // El código que llega por correo para recuperar la contraseña: 6 números.
+        public static string? Codigo(string valor) =>
+            valor.Length == 6 && valor.All(char.IsAsciiDigit)
+                ? null
+                : "Escribe el código de 6 números que te llegó al correo.";
+
         public static string? Correo(string valor)
         {
             if (valor.Length == 0)

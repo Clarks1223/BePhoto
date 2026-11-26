@@ -1,3 +1,4 @@
+using FrontEnd.Services;
 using FrontEnd.Utils;
 
 namespace FrontEnd.Views
@@ -16,13 +17,29 @@ namespace FrontEnd.Views
             if (!Formulario.Validar((txtCorreo, Reglas.Correo)))
                 return;
 
-            // TODO: enviar txtCorreo al backend para que mande el correo de
-            // recuperación. Por ahora solo se pasa a la pantalla de cambiar la
-            // contraseña para poder recorrer el flujo.
-            if (!await Conexion.Ejecutar(this, btnEnviar, _ => Task.CompletedTask))
+            // El servidor responde lo mismo exista o no la cuenta, así que siempre se
+            // pasa a la pantalla donde se escribe el código.
+            string? problema = null;
+            if (!await Conexion.Ejecutar(this, btnEnviar, async t =>
+                {
+                    try
+                    {
+                        await Api.OlvideContrasenaAsync(txtCorreo.Text, t);
+                    }
+                    catch (ApiException ex)
+                    {
+                        problema = ex.Message;
+                    }
+                }))
                 return;
 
-            await Navigation.PushAsync(new vCambiarContrasena());
+            if (problema is not null)
+            {
+                await DisplayAlertAsync("No se pudo enviar el código", problema, "Entendido");
+                return;
+            }
+
+            await Navigation.PushAsync(new vCambiarContrasena(correoRecuperacion: txtCorreo.Text));
         }
 
         private async void OnIrLoginClicked(object? sender, EventArgs e)

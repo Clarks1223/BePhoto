@@ -12,6 +12,21 @@ namespace BePhoto.Api.Entidades
         public List<Recuerdo> Recuerdos { get; set; } = new();
     }
 
+    // Código de 6 dígitos para recuperar la contraseña. Se guarda cifrado (hash), vale 15 minutos
+    // y solo se puede intentar unas pocas veces.
+    public class CodigoRestablecimiento
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid UsuarioId { get; set; }
+        public Usuario? Usuario { get; set; }
+
+        public string CodigoHash { get; set; } = string.Empty;
+        public DateTime Expira { get; set; }
+        public int Intentos { get; set; }
+        public bool Usado { get; set; }
+        public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    }
+
     public class Recuerdo
     {
         public Guid Id { get; set; } = Guid.NewGuid();
