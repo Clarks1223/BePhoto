@@ -47,7 +47,7 @@
                     <GradientStop Color="#00000000" Offset="1" />
                 </LinearGradientBrush>
             </Grid.Background>
-            <Grid ColumnDefinitions="48,*,48"
+            <Grid ColumnDefinitions="48,*,48,48"
                   HeightRequest="64"
                   Padding="8">
                 <Grid SemanticProperties.Description="Volver a mis recuerdos">
@@ -64,7 +64,18 @@
                        FontSize="16"
                        HorizontalTextAlignment="Center"
                        VerticalTextAlignment="Center" />
-                <Grid Grid.Column="2"
+                <!-- Se oculta en las fotos de ejemplo, que no se pueden compartir -->
+                <Grid x:Name="grdCompartir"
+                      Grid.Column="2"
+                      SemanticProperties.Description="Compartir foto">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCompartirTapped" />
+                    </Grid.GestureRecognizers>
+                    <Path Style="{StaticResource IconoLinea}"
+                          Stroke="White"
+                          Data="M15,6 A3,3 0 1,0 21,6 A3,3 0 1,0 15,6 M3,12 A3,3 0 1,0 9,12 A3,3 0 1,0 3,12 M15,18 A3,3 0 1,0 21,18 A3,3 0 1,0 15,18 M8.6,10.5 L15.4,7.5 M8.6,13.5 L15.4,16.5" />
+                </Grid>
+                <Grid Grid.Column="3"
                       SemanticProperties.Description="Eliminar foto">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnEliminarTapped" />

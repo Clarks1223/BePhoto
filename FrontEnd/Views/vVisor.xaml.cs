@@ -39,6 +39,28 @@ namespace FrontEnd.Views
         {
             int posicion = Math.Clamp(crvFotos.Position, 0, Math.Max(0, _fotos.Count - 1));
             lblPosicion.Text = $"{posicion + 1} de {_fotos.Count}";
+            grdCompartir.IsVisible = posicion < _fotos.Count && CompartirFoto.Disponible(_fotos[posicion]);
+        }
+
+        private async void OnCompartirTapped(object? sender, TappedEventArgs e)
+        {
+            if (_ocupado || crvFotos.Position < 0 || crvFotos.Position >= _fotos.Count)
+                return;
+            _ocupado = true;
+
+            try
+            {
+                await CompartirFoto.Compartir(this, _fotos[crvFotos.Position]);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                await DisplayAlertAsync("No se pudo compartir", "Inténtalo de nuevo.", "Aceptar");
+            }
+            finally
+            {
+                _ocupado = false;
+            }
         }
 
         private async void OnFotoMantenida(object? sender, EventArgs e)

@@ -457,12 +457,44 @@ namespace FrontEnd.Views
                 return;
             _menuAbierto = true;
 
+            MostrarUsuario(Api.Usuario);
+            _ = ActualizarUsuario();
+
             bxVelo.Opacity = 0;
             brdMenu.Opacity = 0;
             brdMenu.TranslationY = DesplazamientoMenu;
             grdMenu.IsVisible = true;
 
             await AnimarMenu(abrir: true);
+        }
+
+        private void MostrarUsuario(UsuarioApi? usuario)
+        {
+            string nombre = usuario?.Nombre?.Trim() ?? string.Empty;
+            string apellido = usuario?.Apellido?.Trim() ?? string.Empty;
+            string correo = usuario?.Correo?.Trim() ?? string.Empty;
+
+            lblNombre.Text = string.IsNullOrEmpty(nombre) ? "—" : nombre;
+            lblApellido.Text = string.IsNullOrEmpty(apellido) ? "—" : apellido;
+            lblCorreo.Text = string.IsNullOrEmpty(correo) ? "—" : correo;
+
+            string completo = $"{nombre} {apellido}".Trim();
+            lblNombreUsuario.Text = string.IsNullOrEmpty(completo) ? "Tu cuenta" : completo;
+        }
+
+        // Refresca los datos desde el servidor; sin conexión se quedan los guardados.
+        private async Task ActualizarUsuario()
+        {
+            try
+            {
+                using var limite = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                UsuarioApi usuario = await Api.ObtenerPerfilAsync(limite.Token);
+                MostrarUsuario(usuario);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         private async Task CerrarMenu()

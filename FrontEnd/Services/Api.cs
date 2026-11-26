@@ -27,6 +27,7 @@ namespace FrontEnd.Services
 
         private const string ClaveSesion = "sesion_activa";
         private const string ClaveToken = "token_api";
+        private const string ClaveUsuario = "usuario_sesion";
 
         private static readonly HttpClient Cliente = new()
         {
@@ -46,6 +47,32 @@ namespace FrontEnd.Services
         // Se guarda aparte del token (que va cifrado y es asíncrono) para poder elegir
         // la pantalla inicial al arrancar sin esperar.
         public static bool HaySesion => Preferences.Default.Get(ClaveSesion, false);
+
+        // Datos del usuario con sesión, guardados al entrar para mostrarlos sin conexión.
+        public static UsuarioApi? Usuario
+        {
+            get
+            {
+                string json = Preferences.Default.Get(ClaveUsuario, string.Empty);
+                if (string.IsNullOrEmpty(json))
+                    return null;
+                try
+                {
+                    return JsonSerializer.Deserialize(json, ApiJson.Default.UsuarioApi);
+                }
+                catch (JsonException)
+                {
+                    return null;
+                }
+            }
+            private set
+            {
+                if (value is null)
+                    Preferences.Default.Remove(ClaveUsuario);
+                else
+                    Preferences.Default.Set(ClaveUsuario, JsonSerializer.Serialize(value, ApiJson.Default.UsuarioApi));
+            }
+        }
 
         // ---------- Cuenta ----------
 
@@ -93,11 +120,21 @@ namespace FrontEnd.Services
                 false, ct);
         }
 
+        // Trae los datos actuales del usuario y los deja guardados en el teléfono.
+        public static async Task<UsuarioApi> ObtenerPerfilAsync(CancellationToken ct)
+        {
+            using HttpResponseMessage respuesta = await EnviarAsync(HttpMethod.Get, "api/perfil", null, true, ct);
+            PerfilApi perfil = await LeerAsync(respuesta, ApiJson.Default.PerfilApi, ct);
+            Usuario = perfil.Usuario;
+            return perfil.Usuario;
+        }
+
         // Borra la sesión y los recuerdos del usuario guardados en el teléfono.
         public static void CerrarSesion()
         {
             _token = null;
             Preferences.Default.Remove(ClaveSesion);
+            Usuario = null;
             try
             {
                 SecureStorage.Default.Remove(ClaveToken);
@@ -240,6 +277,7 @@ namespace FrontEnd.Services
             RecuerdoRepository.LimpiarSesion();
 
             _token = respuesta.Token;
+            Usuario = respuesta.Usuario;
             try
             {
                 await SecureStorage.Default.SetAsync(ClaveToken, respuesta.Token);
@@ -294,6 +332,8 @@ namespace FrontEnd.Services
 
     public sealed record AuthRespuesta(string Token, DateTime Expira, UsuarioApi Usuario);
 
+    public sealed record PerfilApi(UsuarioApi Usuario, int TotalRecuerdos, int TotalUbicaciones);
+
     public sealed record RecuerdoApi(
         Guid Id,
         string Titulo,
@@ -317,6 +357,8 @@ namespace FrontEnd.Services
     [JsonSerializable(typeof(OlvideContrasenaPeticion))]
     [JsonSerializable(typeof(RestablecerContrasenaPeticion))]
     [JsonSerializable(typeof(AuthRespuesta))]
+    [JsonSerializable(typeof(UsuarioApi))]
+    [JsonSerializable(typeof(PerfilApi))]
     [JsonSerializable(typeof(RecuerdoApi))]
     [JsonSerializable(typeof(List<RecuerdoApi>), TypeInfoPropertyName = "ListaRecuerdoApi")]
     [JsonSerializable(typeof(ProblemaApi))]
