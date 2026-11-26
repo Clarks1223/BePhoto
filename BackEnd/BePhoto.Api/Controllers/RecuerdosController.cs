@@ -72,10 +72,18 @@ namespace BePhoto.Api.Controllers
 
             Guid usuarioId = User.UsuarioId();
 
+            // La foto va a la carpeta del usuario, nombrada con su correo.
+            string? correo = await db.Usuarios
+                .Where(u => u.Id == usuarioId)
+                .Select(u => u.Correo)
+                .FirstOrDefaultAsync(ct);
+            if (correo is null)
+                return Problem(detail: "La sesión ya no es válida.", statusCode: StatusCodes.Status401Unauthorized);
+
             FotoSubida subida;
             try
             {
-                subida = await fotos.SubirAsync(foto, usuarioId, ct);
+                subida = await fotos.SubirAsync(foto, correo, ct);
             }
             catch (Exception ex)
             {

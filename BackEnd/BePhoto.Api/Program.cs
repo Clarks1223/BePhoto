@@ -114,6 +114,9 @@ using (IServiceScope alcance = app.Services.CreateScope())
     await db.Database.EnsureCreatedAsync();
 }
 
+// Las fotos subidas cuando la carpeta era el Id del usuario pasan a la carpeta de su correo.
+await MigracionCarpetas.EjecutarAsync(app.Services);
+
 if (app.Environment.IsDevelopment())
     app.MapOpenApi(); // descripción de la API en /openapi/v1.json
 
